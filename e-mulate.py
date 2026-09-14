@@ -53,6 +53,12 @@ import interface_config
 
 # Adding the GUI files directory to the system path
 sys.path.append(os.path.join(os.path.dirname(__file__), "GUI"))
+sys.path.append(os.path.join(os.path.dirname(__file__), "windows_executable"))
+
+from windows_executable.source.utils.utils_main_fortran import run_fortran_simulation
+from windows_executable.source.fortran_simulation.SimulationOptions import SimulationOptions
+from windows_executable.source.fortran_simulation.FortranSimulator import FortranSimulator
+from windows_executable.source.fortran_simulation.Plotter import Plotter
 
 NM = 1.0e-9
 
@@ -99,6 +105,7 @@ class MainWindow(QMainWindow):
         self.CreatePlots()
         self.InitializeStructTable()
         self.InitializeDataTable()
+        self.InitializeFortranSamplesTable()
         self.UpdateInterface()
 
     # GUI ##############################################################################
@@ -174,6 +181,16 @@ class MainWindow(QMainWindow):
 
         # Automation tab
         self.auto_run_btn.clicked.connect(self.RunAutomation)
+
+        # Fortran Sim tab
+        self.fortran_run_btn.clicked.connect(self.RunFortranSimulation)
+        self.fortran_s0_spb.valueChanged.connect(self.PlotFortranBandStructure)
+        self.fortran_s1_spb.valueChanged.connect(self.PlotFortranBandStructure)
+        self.fortran_s2_spb.valueChanged.connect(self.PlotFortranBandStructure)
+        self.fortran_s3_spb.valueChanged.connect(self.PlotFortranBandStructure)
+        self.fortran_s4_spb.valueChanged.connect(self.PlotFortranBandStructure)
+        self.fortran_s5_spb.valueChanged.connect(self.PlotFortranBandStructure)
+        self.fortran_s6_spb.valueChanged.connect(self.PlotFortranBandStructure)
 
         # Advanced options tab
         self.adv_nm_layers_chkbx.stateChanged.connect(self.UpdateUnits)
@@ -692,6 +709,35 @@ class MainWindow(QMainWindow):
         self.ga_subplot = self.ga_fig.add_subplot(111)
         self.ga_subplot.grid(True, axis="both")
         self.show()
+        # Fortran simulation plots (3 graphs: Potencial+WF, OscStr, Photocurrent)
+        self.fortran_fig1 = plt.figure()
+        self.fortran_canvas1 = FigureCanvas(self.fortran_fig1)
+        self.fortran_plot_layout1.addWidget(self.fortran_canvas1)
+        self.fortran_nav1 = NavigationToolbar(self.fortran_canvas1, self.fortran_tab)
+        self.fortran_plot_layout1.addWidget(self.fortran_nav1)
+        self.fortran_subplot1 = self.fortran_fig1.add_subplot(111)
+        self.fortran_subplot1.grid(True, axis="both")
+        self.show()
+
+        self.fortran_fig2 = plt.figure()
+        self.fortran_canvas2 = FigureCanvas(self.fortran_fig2)
+        self.fortran_plot_layout2.addWidget(self.fortran_canvas2)
+        self.fortran_nav2 = NavigationToolbar(self.fortran_canvas2, self.fortran_tab)
+        self.fortran_plot_layout2.addWidget(self.fortran_nav2)
+        self.fortran_subplot2 = self.fortran_fig2.add_subplot(111)
+        self.fortran_subplot2.grid(True, axis="both")
+        self.show()
+
+        self.fortran_fig3 = plt.figure()
+        self.fortran_canvas3 = FigureCanvas(self.fortran_fig3)
+        self.fortran_plot_layout3.addWidget(self.fortran_canvas3)
+        self.fortran_nav3 = NavigationToolbar(self.fortran_canvas3, self.fortran_tab)
+        self.fortran_plot_layout3.addWidget(self.fortran_nav3)
+        self.fortran_subplot3 = self.fortran_fig3.add_subplot(111)
+        self.fortran_subplot3.grid(True, axis="both")
+        self.show()
+
+        self.PlotFortranBandStructure()
 
     # Structure and Wave Function
     def PlotStructure(self, sim=None):
@@ -1606,6 +1652,369 @@ class MainWindow(QMainWindow):
         self.Sobre = SobreWindow()
         # mostrando na tela a classe criada para a segunda janela
         self.Sobre.show()
+
+    def PlotFortranBandStructure(self):
+        """
+        Plots 3 figures for Fortran simulation tab:
+        1. Potencial with wavefunctions (from simulation data if available, or structural profile).
+        2. Oscillator Strength (OscStr).
+        3. Photocurrent (PC).
+        """
+        struct = [
+            int(self.fortran_s0_spb.value()),
+            round(self.fortran_s1_spb.value() * 10, 1),
+            round(self.fortran_s2_spb.value() * 10, 1),
+            round(self.fortran_s3_spb.value() * 10, 1),
+            int(self.fortran_s4_spb.value()),
+            round(self.fortran_s5_spb.value() * 10, 1),
+            round(self.fortran_s6_spb.value() * 10, 1),
+        ]
+
+        from conf import output_fortran_folder
+        sim_options = SimulationOptions(force_parser=False, force_simulation=False)
+        simulator = FortranSimulator(struct, sim_options=sim_options, output_folder=output_fortran_folder)
+
+        # Clear subplots
+        self.fortran_subplot1.clear()
+        self.fortran_subplot2.clear()
+        self.fortran_subplot3.clear()
+
+        # Check if simulation exists (all output text files exist)
+        sim_exists = (
+            os.path.exists(simulator.potencial_file) and
+            os.path.exists(simulator.wavefunction_file) and
+            os.path.exists(simulator.oscstr_file) and
+            os.path.exists(simulator.photocurrent_file)
+        )
+
+        if sim_exists:
+            try:
+                sample_data = simulator.simulate()
+
+                # Plot 1: Potencial + Wavefunctions
+                Plotter.plot_structure(
+                    self.fortran_subplot1,
+                    sample_data.x_potencial,
+                    sample_data.y_potencial,
+                    sample_data.autoenergias,
+                    sample_data.wavefunctions,
+                    sample_data.max_e_oscstr_index,
+                    -50, 700
+                )
+                self.fortran_subplot1.set_title("Potencial e Funções de Onda")
+
+                # Plot 2: Oscillator Strength
+                Plotter.plot_osc(
+                    self.fortran_subplot2,
+                    oscstr=sample_data.oscstr,
+                    oscstr_e=sample_data.oscstr_e,
+                    E0=sample_data.E0,
+                    lim_E_min=-50,
+                    lim_E_max=700,
+                    max_e_oscstr_index=sample_data.max_e_oscstr_index
+                )
+                self.fortran_subplot2.set_title("Força de Oscilador")
+
+                # Plot 3: Photocurrent
+                Plotter.plot_pc(
+                    self.fortran_subplot3,
+                    pc=sample_data.pc,
+                    pc_e=sample_data.pc_e,
+                    E0=sample_data.E0,
+                    lim_E_min=-50,
+                    lim_E_max=700,
+                    max_abs_photocurrent=sample_data.max_abs_photocurrent,
+                    max_e_abs_photocurrent=sample_data.max_e_abs_photocurrent,
+                    min_abs_photocurrent=sample_data.min_abs_photocurrent,
+                    min_e_abs_photocurrent=sample_data.min_e_abs_photocurrent
+                )
+                self.fortran_subplot3.set_title("Photocurrent")
+
+                # Display summary text in results text box
+                _structure = sample_data.structure
+                _pc = sample_data.max_abs_photocurrent
+                _pc_e = sample_data.max_e_abs_photocurrent
+                _os = sample_data.max_e_oscstr
+                _os_e = sample_data.max_e_transition
+                output_lines = [
+                    "=" * 50,
+                    f"Amostra simulada encontrada: {sample_data.sample_id}",
+                    f"Fitness: {sample_data.fitness:.4f}",
+                    f"Estructura: {_structure}",
+                    f"PC: {_pc:.4e}, PC_e: {_pc_e:.1f} meV",
+                    f"OS: {_os:.4f}, OS_e: {_os_e:.1f} meV",
+                    "=" * 50,
+                ]
+                self.fortran_output_txt.setText("\n".join(output_lines))
+
+            except Exception as e:
+                self.fortran_output_txt.setText(f"Erro ao carregar dados da simulação: {str(e)}")
+                self._plot_fallback_band_profile(struct)
+        else:
+            self._plot_fallback_band_profile(struct)
+            self.fortran_output_txt.setText("Amostra ainda não simulada. Clique em 'Run Fortran Simulation' para ejecutar.")
+
+        self.fortran_fig1.tight_layout()
+        self.fortran_fig2.tight_layout()
+        self.fortran_fig3.tight_layout()
+        self.fortran_canvas1.draw()
+        self.fortran_canvas2.draw()
+        self.fortran_canvas3.draw()
+
+    def _plot_fallback_band_profile(self, struct):
+        """Fallback method to plot simple conduction band profile when simulation files do not exist yet."""
+        w_l = struct[0]
+        qw_l = struct[1] / 10.0
+        qb_l = struct[2] / 10.0
+        qw_c = struct[3] / 10.0
+        w_r = struct[4]
+        qw_r = struct[5] / 10.0
+        qb_r = struct[6] / 10.0
+
+        barrier_energy = 500.0
+        well_energy = 0.0
+
+        thicknesses = [50.0]
+        energies = [barrier_energy]
+
+        for _ in range(w_l):
+            thicknesses.extend([qw_l, qb_l])
+            energies.extend([well_energy, barrier_energy])
+
+        thicknesses.append(qw_c)
+        energies.append(well_energy)
+
+        for _ in range(w_r):
+            thicknesses.extend([qb_r, qw_r])
+            energies.extend([barrier_energy, well_energy])
+
+        thicknesses.append(50.0)
+        energies.append(barrier_energy)
+
+        left_total_thickness = 50.0 + w_l * (qw_l + qb_l)
+        current_x = -left_total_thickness
+
+        x_pts, y_pts = [], []
+        for th, en in zip(thicknesses, energies):
+            x_pts.extend([current_x, current_x + th])
+            y_pts.extend([en, en])
+            current_x += th
+
+        self.fortran_subplot1.plot(x_pts, y_pts, color="blue", linewidth=1.5)
+        self.fortran_subplot1.set_xlabel("Thickness (nm)")
+        self.fortran_subplot1.set_ylabel("Energy (meV)")
+        self.fortran_subplot1.set_title("Potencial e Funções de Onda (Perfil)")
+        self.fortran_subplot1.grid(True, axis="both")
+        self.fortran_subplot1.set_ylim(-50, 700)
+
+        self.fortran_subplot2.set_xlabel("Oscillator Strength")
+        self.fortran_subplot2.set_ylabel("ΔE (meV)")
+        self.fortran_subplot2.set_title("Força de Oscilador")
+        self.fortran_subplot2.grid(True, axis="both")
+        self.fortran_subplot2.set_ylim(-50, 700)
+
+        self.fortran_subplot3.set_xlabel("Photocurrent (a.u)")
+        self.fortran_subplot3.set_ylabel("ΔE (meV)")
+        self.fortran_subplot3.set_title("Photocurrent")
+        self.fortran_subplot3.grid(True, axis="both")
+        self.fortran_subplot3.set_ylim(-50, 700)
+
+    def RunFortranSimulation(self):
+        """
+        Executes Fortran simulation based on structure inputs and options in GUI tab.
+        Indices 1, 2, 3, 5, 6 are multiplied by 10 before passing to simulation.
+        """
+        try:
+            struct = [
+                int(self.fortran_s0_spb.value()),
+                round(self.fortran_s1_spb.value() * 10, 1),
+                round(self.fortran_s2_spb.value() * 10, 1),
+                round(self.fortran_s3_spb.value() * 10, 1),
+                int(self.fortran_s4_spb.value()),
+                round(self.fortran_s5_spb.value() * 10, 1),
+                round(self.fortran_s6_spb.value() * 10, 1),
+            ]
+
+            force_parser = self.fortran_force_parser_chkbx.isChecked()
+            force_sim = self.fortran_force_sim_chkbx.isChecked()
+
+            sim_options = SimulationOptions(
+                force_parser=force_parser,
+                force_simulation=force_sim,
+            )
+
+            individuo = [struct, sim_options]
+            fitness, result_dictionary = run_fortran_simulation(individuo)
+
+            _structure = result_dictionary.get('structure', [])
+            _pc = result_dictionary.get('pc1', 0)
+            _pc_e = result_dictionary.get('pc1e', 0)
+            _os = result_dictionary.get('oscstr', 0)
+            _os_e = result_dictionary.get('oscstre', 0)
+
+            output_lines = [
+                "=" * 50,
+                "Simulação completada com sucesso.",
+                f"Fitness: {fitness}",
+                f"Estructura: {_structure}",
+                f"PC: {_pc}, PC_e: {_pc_e}",
+                f"OS: {_os}, OS_e: {_os_e}",
+                "=" * 50,
+            ]
+            text_output = "\n".join(output_lines)
+            self.fortran_output_txt.setText(text_output)
+            print(text_output)
+            self.UpdateFortranSamplesTable()
+            self.PlotFortranBandStructure()
+        except Exception as e:
+            err_msg = f"Error executing Fortran Simulation: {str(e)}"
+            self.fortran_output_txt.setText(err_msg)
+            print(err_msg)
+
+    def InitializeFortranSamplesTable(self):
+        """
+        Initializes the columns for simulated Fortran samples table and configures the resizable QSplitters.
+        Columns: s0, s1, s2, s3, s4, s5, s6, PC Max, PC Energy (meV), OS Max, OS Energy (meV)
+        """
+        if hasattr(self, "fortran_splitter"):
+            # Set relative stretch factors for main panels: Controls (1), Plots (3), Table (3)
+            self.fortran_splitter.setStretchFactor(0, 1)
+            self.fortran_splitter.setStretchFactor(1, 3)
+            self.fortran_splitter.setStretchFactor(2, 3)
+
+        if hasattr(self, "fortran_plots_splitter"):
+            # Set 2:1:1 ratio (2/4, 1/4, 1/4) for the 3 plot panels
+            self.fortran_plots_splitter.setStretchFactor(0, 2)
+            self.fortran_plots_splitter.setStretchFactor(1, 1)
+            self.fortran_plots_splitter.setStretchFactor(2, 1)
+
+        columns = [
+            "s0", "s1", "s2", "s3", "s4", "s5", "s6",
+            "PC Max", "PC E (meV)", "OS Max", "OS E (meV)"
+        ]
+        self.fortran_samples_table.setColumnCount(len(columns))
+        self.fortran_samples_table.setHorizontalHeaderLabels(columns)
+        self.fortran_samples_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.fortran_samples_table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.fortran_samples_table.itemSelectionChanged.connect(self.OnFortranSampleSelected)
+        self.UpdateFortranSamplesTable()
+
+    def UpdateFortranSamplesTable(self):
+        """
+        Scans temp_database/temp folder for existing simulations and populates fortran_samples_table.
+        """
+        from conf import output_fortran_folder
+        temp_dir = os.path.join(output_fortran_folder, "temp")
+        if not os.path.exists(temp_dir):
+            return
+
+        self.fortran_samples_table.setRowCount(0)
+        self.fortran_samples_data = []
+
+        folder_names = sorted(os.listdir(temp_dir))
+        row = 0
+        for folder in folder_names:
+            folder_path = os.path.join(temp_dir, folder)
+            if not os.path.isdir(folder_path):
+                continue
+
+            # Check if simulation output files exist
+            pot_file = os.path.join(folder_path, "Potencial_SL.txt")
+            wf_file = os.path.join(folder_path, "wavefunction_SL.txt")
+            osc_file = os.path.join(folder_path, "OscStr_SL.txt")
+            pc_file = os.path.join(folder_path, "Photocurrent_SL.txt")
+
+            if not (os.path.exists(pot_file) and os.path.exists(wf_file) and os.path.exists(osc_file) and os.path.exists(pc_file)):
+                continue
+
+            try:
+                # Parse structure params from folder name format: 05x02.0_07.0__02.5__01x02.0_07.0
+                parts = folder.split("__")
+                left_parts = parts[0].split("x")
+                s0 = int(left_parts[0])
+                s1_s2 = left_parts[1].split("_")
+                s1 = float(s1_s2[0])
+                s2 = float(s1_s2[1])
+
+                s3 = float(parts[1])
+
+                right_parts = parts[2].split("x")
+                s4 = int(right_parts[0])
+                s5_s6 = right_parts[1].split("_")
+                s5 = float(s5_s6[0])
+                s6 = float(s5_s6[1])
+
+                struct = [s0, round(s1 * 10, 1), round(s2 * 10, 1), round(s3 * 10, 1), s4, round(s5 * 10, 1), round(s6 * 10, 1)]
+
+                sim_options = SimulationOptions(force_parser=False, force_simulation=False)
+                simulator = FortranSimulator(struct, sim_options=sim_options, output_folder=output_fortran_folder)
+                sample_data = simulator.simulate()
+
+                pc_max = sample_data.max_abs_photocurrent
+                pc_e = sample_data.max_e_abs_photocurrent
+                os_max = sample_data.max_e_oscstr
+                os_e = sample_data.max_e_transition
+
+                self.fortran_samples_table.insertRow(row)
+
+                display_vals = [
+                    f"{s0}", f"{s1:.1f}", f"{s2:.1f}", f"{s3:.1f}", f"{s4}", f"{s5:.1f}", f"{s6:.1f}",
+                    f"{pc_max:.2e}", f"{pc_e:.1f}", f"{os_max:.4f}", f"{os_e:.1f}"
+                ]
+
+                for col, val in enumerate(display_vals):
+                    item = QTableWidgetItem(val)
+                    item.setTextAlignment(Qt.AlignCenter)
+                    self.fortran_samples_table.setItem(row, col, item)
+
+                self.fortran_samples_data.append({
+                    "s0": s0, "s1": s1, "s2": s2, "s3": s3,
+                    "s4": s4, "s5": s5, "s6": s6
+                })
+                row += 1
+            except Exception as e:
+                print(f"Error reading sample folder {folder}: {e}")
+
+        self.fortran_samples_table.resizeColumnsToContents()
+
+    def OnFortranSampleSelected(self):
+        """
+        Triggered when a row in fortran_samples_table is clicked.
+        Loads the selected sample parameters into spinboxes and updates the 3 plots.
+        """
+        selected_rows = self.fortran_samples_table.selectionModel().selectedRows()
+        if not selected_rows:
+            return
+
+        row = selected_rows[0].row()
+        if row < len(self.fortran_samples_data):
+            sample = self.fortran_samples_data[row]
+            # Block signals while setting values to avoid redundant redraw calls
+            self.fortran_s0_spb.blockSignals(True)
+            self.fortran_s1_spb.blockSignals(True)
+            self.fortran_s2_spb.blockSignals(True)
+            self.fortran_s3_spb.blockSignals(True)
+            self.fortran_s4_spb.blockSignals(True)
+            self.fortran_s5_spb.blockSignals(True)
+            self.fortran_s6_spb.blockSignals(True)
+
+            self.fortran_s0_spb.setValue(sample["s0"])
+            self.fortran_s1_spb.setValue(sample["s1"])
+            self.fortran_s2_spb.setValue(sample["s2"])
+            self.fortran_s3_spb.setValue(sample["s3"])
+            self.fortran_s4_spb.setValue(sample["s4"])
+            self.fortran_s5_spb.setValue(sample["s5"])
+            self.fortran_s6_spb.setValue(sample["s6"])
+
+            self.fortran_s0_spb.blockSignals(False)
+            self.fortran_s1_spb.blockSignals(False)
+            self.fortran_s2_spb.blockSignals(False)
+            self.fortran_s3_spb.blockSignals(False)
+            self.fortran_s4_spb.blockSignals(False)
+            self.fortran_s5_spb.blockSignals(False)
+            self.fortran_s6_spb.blockSignals(False)
+
+            self.PlotFortranBandStructure()
 
     # Legacy functions #################################################################
     def Campo(self):

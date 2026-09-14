@@ -53,3 +53,8 @@ html_theme = 'alabaster'
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+import os
+
+output_fortran_folder = "C:/codes_jer/e-mulate/windows_executable/temp_database/"
+file_ed_exe = os.path.abspath('C:/codes_jer/e-mulate/windows_executable/photocurrent_sim_windows.exe')

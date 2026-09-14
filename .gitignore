@@ -128,3 +128,5 @@ dmypy.json
 # Pyre type checker
 .pyre/
 linux_executable/temp_files/
+windows_executable/temp_database/
+windows_executable/source/fortran_python_llm/

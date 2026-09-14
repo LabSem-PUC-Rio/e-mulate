@@ -2843,9 +2843,6 @@
         </item>
         <item>
          <layout class="QVBoxLayout" name="ga_plot_layout">
-          <property name="spacing">
-           <number>2</number>
-          </property>
           <item>
            <spacer name="horizontalSpacer_5">
             <property name="orientation">
@@ -2860,6 +2857,291 @@
            </spacer>
           </item>
          </layout>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="fortran_tab">
+       <attribute name="title">
+        <string>Fortran Sim</string>
+       </attribute>
+       <layout class="QHBoxLayout" name="horizontalLayout_fortran">
+        <property name="spacing">
+         <number>6</number>
+        </property>
+        <property name="leftMargin">
+         <number>6</number>
+        </property>
+        <property name="topMargin">
+         <number>6</number>
+        </property>
+        <property name="rightMargin">
+         <number>6</number>
+        </property>
+        <property name="bottomMargin">
+         <number>6</number>
+        </property>
+        <item>
+         <widget class="QSplitter" name="fortran_splitter">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <widget class="QWidget" name="fortran_controls_widget">
+           <layout class="QVBoxLayout" name="fortran_controls_layout">
+            <item>
+             <widget class="QLabel" name="lbl_fortran_header">
+              <property name="font">
+               <font>
+                <pointsize>11</pointsize>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="text">
+               <string>Fortran Simulation Parameters</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <layout class="QGridLayout" name="fortran_struct_grid">
+              <item row="0" column="0">
+               <widget class="QLabel" name="lbl_s0"><property name="text"><string>Left QW Count [0]:</string></property></widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QSpinBox" name="fortran_s0_spb">
+                <property name="maximum"><number>100</number></property>
+                <property name="value"><number>5</number></property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="lbl_s1"><property name="text"><string>Left QW Thickness [1]:</string></property></widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QDoubleSpinBox" name="fortran_s1_spb">
+                <property name="decimals"><number>1</number></property>
+                <property name="singleStep"><double>0.1</double></property>
+                <property name="maximum"><double>100.0</double></property>
+                <property name="value"><double>2.0</double></property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="lbl_s2"><property name="text"><string>Left Barrier Thickness [2]:</string></property></widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QDoubleSpinBox" name="fortran_s2_spb">
+                <property name="decimals"><number>1</number></property>
+                <property name="singleStep"><double>0.1</double></property>
+                <property name="maximum"><double>100.0</double></property>
+                <property name="value"><double>7.0</double></property>
+               </widget>
+              </item>
+              <item row="3" column="0">
+               <widget class="QLabel" name="lbl_s3"><property name="text"><string>Central QW Thickness [3]:</string></property></widget>
+              </item>
+              <item row="3" column="1">
+               <widget class="QDoubleSpinBox" name="fortran_s3_spb">
+                <property name="decimals"><number>1</number></property>
+                <property name="singleStep"><double>0.1</double></property>
+                <property name="maximum"><double>100.0</double></property>
+                <property name="value"><double>2.5</double></property>
+               </widget>
+              </item>
+              <item row="4" column="0">
+               <widget class="QLabel" name="lbl_s4"><property name="text"><string>Right QW Count [4]:</string></property></widget>
+              </item>
+              <item row="4" column="1">
+               <widget class="QSpinBox" name="fortran_s4_spb">
+                <property name="maximum"><number>100</number></property>
+                <property name="value"><number>1</number></property>
+               </widget>
+              </item>
+              <item row="5" column="0">
+               <widget class="QLabel" name="lbl_s5"><property name="text"><string>Right QW Thickness [5]:</string></property></widget>
+              </item>
+              <item row="5" column="1">
+               <widget class="QDoubleSpinBox" name="fortran_s5_spb">
+                <property name="decimals"><number>1</number></property>
+                <property name="singleStep"><double>0.1</double></property>
+                <property name="maximum"><double>100.0</double></property>
+                <property name="value"><double>2.0</double></property>
+               </widget>
+              </item>
+              <item row="6" column="0">
+               <widget class="QLabel" name="lbl_s6"><property name="text"><string>Right Barrier Thickness [6]:</string></property></widget>
+              </item>
+              <item row="6" column="1">
+               <widget class="QDoubleSpinBox" name="fortran_s6_spb">
+                <property name="decimals"><number>1</number></property>
+                <property name="singleStep"><double>0.1</double></property>
+                <property name="maximum"><double>100.0</double></property>
+                <property name="value"><double>7.0</double></property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="fortran_force_parser_chkbx">
+              <property name="text">
+               <string>Force Parser</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="fortran_force_sim_chkbx">
+              <property name="text">
+               <string>Force Simulation</string>
+              </property>
+              <property name="checked">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="fortran_run_btn">
+              <property name="minimumSize">
+               <size>
+                <width>150</width>
+                <height>35</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="text">
+               <string>Run Fortran Simulation</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="fortran_vspacer">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="fortran_plots_widget">
+           <layout class="QVBoxLayout" name="fortran_center_layout">
+            <item>
+             <widget class="QSplitter" name="fortran_plots_splitter">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <widget class="QWidget" name="fortran_plot_widget1">
+               <layout class="QVBoxLayout" name="fortran_plot_layout1">
+                <property name="spacing">
+                 <number>2</number>
+                </property>
+                <property name="leftMargin"><number>0</number></property>
+                <property name="topMargin"><number>0</number></property>
+                <property name="rightMargin"><number>0</number></property>
+                <property name="bottomMargin"><number>0</number></property>
+               </layout>
+              </widget>
+              <widget class="QWidget" name="fortran_plot_widget2">
+               <layout class="QVBoxLayout" name="fortran_plot_layout2">
+                <property name="spacing">
+                 <number>2</number>
+                </property>
+                <property name="leftMargin"><number>0</number></property>
+                <property name="topMargin"><number>0</number></property>
+                <property name="rightMargin"><number>0</number></property>
+                <property name="bottomMargin"><number>0</number></property>
+               </layout>
+              </widget>
+              <widget class="QWidget" name="fortran_plot_widget3">
+               <layout class="QVBoxLayout" name="fortran_plot_layout3">
+                <property name="spacing">
+                 <number>2</number>
+                </property>
+                <property name="leftMargin"><number>0</number></property>
+                <property name="topMargin"><number>0</number></property>
+                <property name="rightMargin"><number>0</number></property>
+                <property name="bottomMargin"><number>0</number></property>
+               </layout>
+              </widget>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="lbl_fortran_results">
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="text">
+               <string>Simulation Results</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QTextEdit" name="fortran_output_txt">
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>120</height>
+               </size>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="fortran_table_widget">
+           <layout class="QVBoxLayout" name="fortran_table_layout">
+            <item>
+             <widget class="QLabel" name="lbl_simulated_table">
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="text">
+               <string>Simulated Samples</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QTableWidget" name="fortran_samples_table">
+              <property name="minimumSize">
+               <size>
+                <width>350</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="selectionBehavior">
+               <enum>QAbstractItemView::SelectRows</enum>
+              </property>
+              <property name="editTriggers">
+               <enum>QAbstractItemView::NoEditTriggers</enum>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </widget>
         </item>
        </layout>
       </widget>
