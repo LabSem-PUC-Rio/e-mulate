@@ -28,6 +28,7 @@ import numpy as np
 import pandas as pd
 import math, pickle
 import logging
+import time
 
 from dataclasses import dataclass, field
 from typing import Optional
@@ -103,45 +104,61 @@ class FortranSimulator():
         # definir nombres de carpetas y archivos
         self.file_id     = lr_str+"x"+lw_str+"_"+lb_str+"__"+de_str+"__"+rr_str+"x"+rw_str+"_"+rb_str
         self.title_img   = lr_str+"x"+lw_str+"_"+lb_str+"  "+de_str+"  "+rr_str+"x"+rw_str+"_"+rb_str
-        self.pkl_path    = f"{output_folder}pkls/{self.file_id}.pkl"
-        os.makedirs(f'{output_folder}pkls/', exist_ok=True)
-        self.exist_plk = os.path.exists(self.pkl_path)
         
-        self.simulation_folder = f'{output_folder}temp/{self.file_id}/'
+        # Resolucao automatica de caminhos compativel com Windows e Linux
+        import conf
+        from conf import resolve_simulation_paths
+        raw_output = output_folder or getattr(conf, "output_fortran_folder", "")
+        db_dir, sim_dir, pkl_dir, _ = resolve_simulation_paths(raw_output)
 
-        self.file_ed = self.simulation_folder + self.file_id + ".f90"
-        self.file_ed_exe = self.simulation_folder + self.file_id + ".exe"
+        self.output_folder = db_dir
+        self.simulations_dir = sim_dir
+        self.pkls_dir = pkl_dir
+
+        self.pkl_path = os.path.join(self.pkls_dir, f"{self.file_id}.pkl")
+        os.makedirs(self.pkls_dir, exist_ok=True)
+        self.exist_plk = os.path.exists(self.pkl_path)
+
+        # Pasta especifica da simulacao atual (ex: .../temp/05x02.0_07.0__02.5__01x02.0_07.0/)
+        # Barra final mantida para compatibilidade total com o executavel Fortran
+        sim_dir_path = os.path.join(self.simulations_dir, self.file_id)
+        self.simulation_folder = sim_dir_path.replace("\\", "/").rstrip("/") + "/"
+
+        self.file_ed = os.path.join(sim_dir_path, f"{self.file_id}.f90").replace("\\", "/")
+        self.file_ed_exe = os.path.join(sim_dir_path, f"{self.file_id}.exe").replace("\\", "/")
 
         # output_files 
-        self.wavefunction_file = self.simulation_folder + "wavefunction_SL.txt"
-        self.transmission_file = self.simulation_folder + "Transmission_SL.txt"
-        self.photocurrent_file = self.simulation_folder + "Photocurrent_SL.txt"
-        self.potencial_file = self.simulation_folder + "Potencial_SL.txt"
-        self.oscstr_file = self.simulation_folder + "OscStr_SL.txt"
-        self.oscstr_norm_file = self.simulation_folder + "OscStr_SL_norm.txt"
-        self.energy_file = self.simulation_folder + "Energy_SL.txt"
-        
-        self.fimprograma_file = self.simulation_folder + "FimPrograma.txt"
-        self.png_file = self.simulation_folder + "image.png"
-        
-        self.files_to_delete = [self.file_ed,
-                                    self.file_ed_exe,
-                                    self.wavefunction_file,
-                                    self.transmission_file,
-                                    self.photocurrent_file,
-                                    self.potencial_file,
-                                    self.oscstr_file,
-                                    self.oscstr_norm_file,
-                                    self.energy_file,
-                                    self.fimprograma_file,
-                                    self.png_file]
-            
+        self.wavefunction_file = os.path.join(sim_dir_path, "wavefunction_SL.txt").replace("\\", "/")
+        self.transmission_file = os.path.join(sim_dir_path, "Transmission_SL.txt").replace("\\", "/")
+        self.photocurrent_file = os.path.join(sim_dir_path, "Photocurrent_SL.txt").replace("\\", "/")
+        self.potencial_file = os.path.join(sim_dir_path, "Potencial_SL.txt").replace("\\", "/")
+        self.oscstr_file = os.path.join(sim_dir_path, "OscStr_SL.txt").replace("\\", "/")
+        self.oscstr_norm_file = os.path.join(sim_dir_path, "OscStr_SL_norm.txt").replace("\\", "/")
+        self.energy_file = os.path.join(sim_dir_path, "Energy_SL.txt").replace("\\", "/")
+
+        self.fimprograma_file = os.path.join(sim_dir_path, "FimPrograma.txt").replace("\\", "/")
+        self.png_file = os.path.join(sim_dir_path, "image.png").replace("\\", "/")
+
+        self.files_to_delete = [
+            self.file_ed,
+            self.file_ed_exe,
+            self.wavefunction_file,
+            self.transmission_file,
+            self.photocurrent_file,
+            self.potencial_file,
+            self.oscstr_file,
+            self.oscstr_norm_file,
+            self.energy_file,
+            self.fimprograma_file,
+            self.png_file
+        ]
+
     def modify_f90_file(self):
         os.makedirs(self.simulation_folder, exist_ok=True)
         for file_to_delete in self.files_to_delete:
-                if os.path.exists(file_to_delete):
-                    os.remove(file_to_delete)
-                    
+            if os.path.exists(file_to_delete):
+                os.remove(file_to_delete)
+
         values_modify = [
             ['&&_&_LLQW_&_&&', self.LLQW_str],
             ['&&_&_LQW_&_&&', self.LQW_str],
@@ -151,23 +168,21 @@ class FortranSimulator():
             ['&&_&_RQW_&_&&', self.RQW_str],
             ['&&_&_RQB_&_&&', self.RQB_str],
             ['&&_&_FORTRAN_FOLDER_&_&&', self.simulation_folder],
-            
         ]
-        
-        
+
         if not os.path.exists(self.file_ed):
             with open(self.f90_file, 'r', encoding="utf-8") as file:
                 file_text = file.read()
-            
+
             for _src, _dst in values_modify:
                 file_text = file_text.replace(_src, _dst)
-            
+
             with open(self.file_ed, 'w') as file:
                 file.write(file_text)
 
     def run_with_inputs(self):
         os.makedirs(self.simulation_folder, exist_ok=True)
-        
+
         self.LLQW_str_exe = "{:.0f}".format(self.structure[0])
         self.LQW_str_exe  = "{:.1f}d0".format(self.structure[1])
         self.LQB_str_exe  = "{:.1f}d0".format(self.structure[2])
@@ -175,15 +190,48 @@ class FortranSimulator():
         self.RLQW_str_exe = "{:.0f}".format(self.structure[4])
         self.RQW_str_exe  = "{:.1f}d0".format(self.structure[5])
         self.RQB_str_exe  = "{:.1f}d0".format(self.structure[6])
-        
-        command_structure = f'{self.LLQW_str_exe} {self.LQW_str_exe} {self.LQB_str_exe} {self.MQW_str_exe} {self.RLQW_str_exe} {self.RQW_str_exe} {self.RQB_str_exe}'
-        comand_to_run = f'{file_ed_exe} {command_structure} "{self.simulation_folder}"'
-        
-        os.system(comand_to_run)
-        # aguarda até que exista o arquivo fimprograma
+
+        import conf
+        exe_path = getattr(conf, "file_ed_exe", file_ed_exe)
+        exe_path = os.path.normpath(str(exe_path).strip().strip('"').strip("'"))
+        if not os.path.exists(exe_path):
+            raise FileNotFoundError(f"Executável Fortran não encontrado em '{exe_path}'. Ajuste o caminho no menu Configurações.")
+
+        # O executavel Fortran espera o argumento de diretorio terminado com barra
+        sim_dir_arg = self.simulation_folder.replace("\\", "/").rstrip("/") + "/"
+
+        cmd_args = [
+            exe_path,
+            self.LLQW_str_exe,
+            self.LQW_str_exe,
+            self.LQB_str_exe,
+            self.MQW_str_exe,
+            self.RLQW_str_exe,
+            self.RQW_str_exe,
+            self.RQB_str_exe,
+            sim_dir_arg
+        ]
+
+        import subprocess
+        logger.info(f"Running fortran simulation: {' '.join(cmd_args)}")
+
+        # Executa diretamente sem invocar cmd.exe shell (evita problemas com aspas e barras no Windows)
+        proc = subprocess.run(cmd_args, capture_output=True, text=True)
+        if proc.returncode != 0:
+            logger.warning(f"Processo Fortran retornou código {proc.returncode}: {proc.stderr}")
+
+        # Aguarda ate que exista o arquivo fimprograma com timeout de seguranca
+        timeout_seconds = 60
+        start_wait = time.time()
         while not os.path.exists(self.fimprograma_file):
-            pass
-    
+            if time.time() - start_wait > timeout_seconds:
+                err_detail = proc.stderr if proc.stderr else proc.stdout
+                raise TimeoutError(
+                    f"A simulação Fortran excedeu o tempo limite ({timeout_seconds}s) sem gerar FimPrograma.txt.\n"
+                    f"Código de retorno: {proc.returncode}\nDetalhes: {err_detail}"
+                )
+            time.sleep(0.1)
+
     def compile_run(self):
         self.only_compile()
         self.only_run()
@@ -195,14 +243,19 @@ class FortranSimulator():
         # aguarda até que exista o arquivo .exe
         while not os.path.exists(self.file_ed_exe):
             pass
-        
+
     def only_run(self):
         if not os.path.exists(self.fimprograma_file):
-            self.comand_to_run = f'{self.file_ed_exe}'
-            os.system(self.comand_to_run)
-            # aguarda até que exista o arquivo fimprograma
+            import subprocess
+            norm_exe = os.path.normpath(self.file_ed_exe)
+            proc = subprocess.run([norm_exe], capture_output=True, text=True)
+            timeout_seconds = 60
+            start_wait = time.time()
             while not os.path.exists(self.fimprograma_file):
-                pass
+                if time.time() - start_wait > timeout_seconds:
+                    raise TimeoutError(f"A simulação Fortran excedeu o tempo limite sem gerar FimPrograma.txt: {proc.stderr}")
+                time.sleep(0.1)
+
     
     def get_time(self):
         with open(self.fimprograma_file) as f:
@@ -314,12 +367,9 @@ class FortranSimulator():
                     self.e_transition_pc.append(float(line.split()[0]))
                     self.photocurrent.append(float(line.split()[1]))
                     
-        normalize_photocurrent = True
-        if normalize_photocurrent:
-            # normalizar photocurrent
-            # print(self.sim_options.reference_pc)
-            reference_pc=1.551237337323166e-11
-            self.photocurrent = [pc / reference_pc for pc in self.photocurrent]
+        # Fotocorrente sem referência fixa (mantém grandezas físicas brutas em Amperes)
+        if getattr(self.sim_options, "reference_pc", None) is not None:
+            self.photocurrent = [pc / self.sim_options.reference_pc for pc in self.photocurrent]
 
             
         
@@ -455,10 +505,10 @@ if __name__ == '__main__':
     sim_options = SimulationOptions(force_parser=True,
                                     force_simulation=False,
                                     plot_type=PlotType.COMPLETE,
-                                    reference_os=0.35883602926785424,
-                                    reference_os_e=299.9442612296449,
-                                    reference_pc=1.551237337323166e-11,
-                                    reference_pc_e=309.6000193186107,
+                                    reference_os=None,
+                                    reference_os_e=None,
+                                    reference_pc=None,
+                                    reference_pc_e=None,
                                     plot_parameter=ParametersSimulation.OS_PC,
                                     lim_x_pc=(200, 400),
                                     # lim_x_structure=(-75, 75),

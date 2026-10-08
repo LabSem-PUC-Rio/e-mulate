@@ -227,18 +227,30 @@ class Plotter:
         if self.sample_data.sim_options.include_os or self.sample_data.sim_options.include_pc:
             sim_pc = self.sample_data.max_abs_photocurrent
             sim_os = self.sample_data.max_e_oscstr
-            ref_pc = self.sample_data.sim_options.reference_pc
-            ref_os = self.sample_data.sim_options.reference_os
+            ref_pc = getattr(self.sample_data.sim_options, "reference_pc", None)
+            ref_os = getattr(self.sample_data.sim_options, "reference_os", None)
             
             text_lines = []
-            # text_lines.append((f"____________________________________", 'black'))
-            text_lines.append((f"|       sim  |    ref  |  gain  |", 'black'))
-            if self.sample_data.sim_options.include_os:
-                gain_os = 100*(sim_os-ref_os)/ref_os
-                text_lines.append((f"|OS:    {sim_os:04.3f}|    {ref_os:04.3f}|{gain_os:6.3f} %|", 'red'))
-            if self.sample_data.sim_options.include_pc:
-                gain_pc = 100*(sim_pc-ref_pc)/ref_pc
-                text_lines.append((f"|PC: {sim_pc:.2e}| {ref_pc:.2e}|{gain_pc:6.3f} %|", 'blue'))
+            if ref_os is not None or ref_pc is not None:
+                text_lines.append((f"|       sim  |    ref  |  gain  |", 'black'))
+                if self.sample_data.sim_options.include_os:
+                    if ref_os is not None and ref_os != 0:
+                        gain_os = 100*(sim_os-ref_os)/ref_os
+                        text_lines.append((f"|OS:    {sim_os:04.3f}|    {ref_os:04.3f}|{gain_os:6.3f} %|", 'red'))
+                    else:
+                        text_lines.append((f"|OS:    {sim_os:04.3f}|", 'red'))
+                if self.sample_data.sim_options.include_pc:
+                    if ref_pc is not None and ref_pc != 0:
+                        gain_pc = 100*(sim_pc-ref_pc)/ref_pc
+                        text_lines.append((f"|PC: {sim_pc:.2e}| {ref_pc:.2e}|{gain_pc:6.3f} %|", 'blue'))
+                    else:
+                        text_lines.append((f"|PC: {sim_pc:.2e}|", 'blue'))
+            else:
+                text_lines.append((f"|       sim  |", 'black'))
+                if self.sample_data.sim_options.include_os:
+                    text_lines.append((f"|OS:    {sim_os:04.3f}|", 'red'))
+                if self.sample_data.sim_options.include_pc:
+                    text_lines.append((f"|PC: {sim_pc:.2e}|", 'blue'))
                 
             # Posición inicial
             x, y = 0.0, -50.0
@@ -1012,35 +1024,28 @@ class Plotter:
         
         # clear plots
         plt.cla()               # clears an axis, i.e. the currently active axis in the current figure. It leaves the other axes untouched.
-        plt.clf()               # clears the entire current figure with all its axes, but leaves the window opened, such that it may be reused for other plots.
-        plt.close()             # closes a window, which will be the current window, if not specified otherwise. 
         plt.close('all') 
         del(fig)
 
     @staticmethod
     def plot_structure(ax_graph, x_potencial, y_potencial, autoenergias, wavefunctions, max_e_oscstr_index, lim_E_min, lim_E_max):
-        # to plot all wave functions
+        # to plot all wave functions with soft slate styling
         for wf in wavefunctions:
-            ax_graph.plot(x_potencial, wf, color='#555555', linewidth=0.5)
+            ax_graph.plot(x_potencial, wf, color='#94a3b8', linewidth=0.75, alpha=0.6)
         
-        # plot structure
-        ax_graph.plot(x_potencial, y_potencial, color='#5555ff', linewidth=1.0)
-        # to fill under the structure
-        ax_graph.fill_between(x_potencial, y_potencial, color='#e2e2ff')
-        ax_graph.fill_between(x_potencial, -100, color='#e2e2ff')
+        # plot structure potential barrier in deep royal navy
+        ax_graph.plot(x_potencial, y_potencial, color='#1e3a8a', linewidth=1.4)
+        # soft ice-blue fill under the barrier structure
+        ax_graph.fill_between(x_potencial, y_potencial, color='#dbeafe', alpha=0.45)
+        ax_graph.fill_between(x_potencial, -100, color='#dbeafe', alpha=0.45)
         
-        # # plot WF max under the barrier
-        # ax_graph.plot(self.x_nm, self.result_wavefunction[self.max_oscstr_under_index+0][1], color='#ffaaaa', linewidth=1.5)
+        # plot excited WF corresponding to max oscillator strength transition (crimson / rose)
+        if max_e_oscstr_index is not None and (max_e_oscstr_index + 1) < len(wavefunctions):
+            ax_graph.plot(x_potencial, wavefunctions[max_e_oscstr_index+1], color='#e11d48', linewidth=2.2, label="Ψ_osc_max")
         
-        # plot WF max over the barrier
-        max_e_oscstr_index
-        ax_graph.plot(x_potencial, wavefunctions[max_e_oscstr_index+1], color='#ff0000', linewidth=2.5)
-        # # print(self.result_wavefunction[self.max_oscstr_above_index-0][0] - self.E0)
-        
-        # plot WF E0
-        # ax_graph.plot(x_potencial, wavefunctions[0], color='#555555', linewidth=1.5)
-        ax_graph.plot(x_potencial, wavefunctions[0], color='#222222', linewidth=2.5)
-
+        # plot fundamental ground state WF E0 (deep charcoal)
+        if len(wavefunctions) > 0:
+            ax_graph.plot(x_potencial, wavefunctions[0], color='#0f172a', linewidth=2.2, label="Ψ_0")
 
         # set limit axes
         lim_x1 = [min(x_potencial), max(x_potencial)]
@@ -1048,6 +1053,7 @@ class Plotter:
         
         ax_graph.set(xlabel="Thickness (nm)", ylabel="Energy (meV)")
         ax_graph.set(xlim=lim_x1, ylim=lim_y1)
+        ax_graph.grid(True, linestyle=":", alpha=0.55)
 
         return ax_graph
         
@@ -1058,19 +1064,19 @@ class Plotter:
                 lim_E_max=700,
                 max_e_oscstr_index=None):
         for _ose, _os in zip(oscstr_e, oscstr):
-            ax_graph.plot(_os, _ose, '.', color='red', markersize=4)
+            ax_graph.plot(_os, _ose, '.', color='#f43f5e', markersize=4.5, alpha=0.75)
         
-        if max_e_oscstr_index:
-            ax_graph.plot(oscstr[max_e_oscstr_index], oscstr_e[max_e_oscstr_index], '.', color='red', markersize=8)
+        if max_e_oscstr_index is not None and max_e_oscstr_index < len(oscstr):
+            ax_graph.plot(oscstr[max_e_oscstr_index], oscstr_e[max_e_oscstr_index], 'o', color='#be123c', markersize=8, markeredgecolor='#881337', markeredgewidth=1)
             
         ax_graph.set_ylabel('ΔE (meV)', fontdict=None, labelpad=0)
-        ax_graph.set_xlabel('Oscillator Strength', color="red")
-        ax_graph.tick_params(axis='x', labelcolor="red")
-        ax_graph.set_ylabel('ΔE (meV)')
+        ax_graph.set_xlabel('Oscillator Strength', color="#be123c", fontweight='bold')
+        ax_graph.tick_params(axis='x', labelcolor="#be123c")
         ax_graph.yaxis.tick_right()
         ax_graph.yaxis.set_label_position("right")
         ax_graph.tick_params(axis='x')
         ax_graph.tick_params(axis='y')
+        ax_graph.grid(True, linestyle=":", alpha=0.55)
 
         ax_graph.set(ylim=[lim_E_min-E0, lim_E_max-E0])
         return ax_graph
@@ -1083,17 +1089,17 @@ class Plotter:
                             lim_E_max=700,
                             max_e_oscstr_index=None):
         for _ose, _os in zip(oscstr_e, oscstr):
-            ax_graph.plot(_ose, _os, '.', color='red', markersize=10)
+            ax_graph.plot(_ose, _os, '.', color='#f43f5e', markersize=8, alpha=0.8)
             
-        if max_e_oscstr_index:
-            ax_graph.plot(oscstr_e[max_e_oscstr_index], oscstr[max_e_oscstr_index], '.', color='red', markersize=15, label="Oscillator strength")
+        if max_e_oscstr_index is not None and max_e_oscstr_index < len(oscstr):
+            ax_graph.plot(oscstr_e[max_e_oscstr_index], oscstr[max_e_oscstr_index], 'o', color='#be123c', markersize=12, markeredgecolor='#881337', markeredgewidth=1.2, label="Oscillator strength")
             
-        # ax_graph.set_title('(b)', x=0.0, y=1)
         ax_graph.set_xlabel('ΔE (meV)')
-        ax_graph.set_ylabel('Oscillator strength', color="red", fontdict=None, labelpad=1)
+        ax_graph.set_ylabel('Oscillator strength', color="#be123c", fontdict=None, labelpad=1, fontweight='bold')
         ax_graph.yaxis.set_label_position("left")
-        ax_graph.tick_params(axis='y', labelcolor="red")
+        ax_graph.tick_params(axis='y', labelcolor="#be123c")
         ax_graph.yaxis.tick_left()
+        ax_graph.grid(True, linestyle=":", alpha=0.55)
             
         return ax_graph
 
@@ -1107,17 +1113,18 @@ class Plotter:
                 max_e_abs_photocurrent = None,
                 min_abs_photocurrent = None,
                 min_e_abs_photocurrent = None):
-        ax_graph.plot(pc, pc_e, color='blue', linewidth=1.0)
-        ax_graph.set_xlabel('Photocurrent (a.u)', color="blue", x=0.5, labelpad=14)
-        ax_graph.tick_params(axis='x', labelcolor="blue", labelsize=8)
+        ax_graph.plot(pc, pc_e, color='#0284c7', linewidth=1.8)
+        ax_graph.set_xlabel('Photocurrent (a.u)', color="#0369a1", x=0.5, labelpad=10, fontweight='bold')
+        ax_graph.tick_params(axis='x', labelcolor="#0369a1", labelsize=8)
         ax_graph.xaxis.offsetText.set_fontsize(8)
+        ax_graph.grid(True, linestyle=":", alpha=0.55)
 
         ax_graph.set(ylim=[lim_E_min-E0, lim_E_max-E0])
         
-        if max_abs_photocurrent and max_e_abs_photocurrent:
-            ax_graph.plot(max_abs_photocurrent, max_e_abs_photocurrent, '.', color='blue', markersize=10)
-        if min_abs_photocurrent and min_e_abs_photocurrent:
-            ax_graph.plot(-min_abs_photocurrent, min_e_abs_photocurrent, '.', color='blue', markersize=10)
+        if max_abs_photocurrent is not None and max_e_abs_photocurrent is not None:
+            ax_graph.plot(max_abs_photocurrent, max_e_abs_photocurrent, 'o', color='#0284c7', markersize=7, markeredgecolor='#075985', markeredgewidth=1)
+        if min_abs_photocurrent is not None and min_e_abs_photocurrent is not None:
+            ax_graph.plot(-min_abs_photocurrent, min_e_abs_photocurrent, 'o', color='#0284c7', markersize=7, markeredgecolor='#075985', markeredgewidth=1)
         
         return ax_graph
 
@@ -1131,26 +1138,21 @@ class Plotter:
                             max_e_abs_photocurrent = None,
                             min_abs_photocurrent = None,
                             min_e_abs_photocurrent = None):
-        
-        # ax_graph.plot(pc_e, pc, color='blue', linewidth=2.0, label="Simulated PC")
-        ax_graph.plot(pc_e, pc, color='blue', linewidth=2.0)
-        ax_graph.set_ylabel('Photocurrent intensity (a.u)', color="blue", x=0.5, labelpad=14)
-        ax_graph.set_ylabel('Normalized Photocurrent', color="blue", x=0.5, labelpad=14)
-        ax_graph.tick_params(axis='y', labelcolor="blue", labelsize=8)
+        ax_graph.plot(pc_e, pc, color='#0284c7', linewidth=2.0)
+        ax_graph.set_ylabel('Normalized Photocurrent', color="#0369a1", x=0.5, labelpad=10, fontweight='bold')
+        ax_graph.tick_params(axis='y', labelcolor="#0369a1", labelsize=8)
         ax_graph.yaxis.offsetText.set_fontsize(8)
+        ax_graph.grid(True, linestyle=":", alpha=0.55)
 
         ax_graph.set(xlim=[lim_E_min-E0, lim_E_max-E0])
-        
         
         pc_e = np.insert(pc_e, 0, 0)
         pc = np.insert(pc, 0, 0)
         
-        
-        if max_abs_photocurrent and max_e_abs_photocurrent:
-            ax_graph.plot(max_e_abs_photocurrent, max_abs_photocurrent, '.', color='blue', markersize=10)
-        if min_abs_photocurrent and min_e_abs_photocurrent:
-            ax_graph.plot(min_e_abs_photocurrent, -min_abs_photocurrent, '.', color='blue', markersize=10)
-
+        if max_abs_photocurrent is not None and max_e_abs_photocurrent is not None:
+            ax_graph.plot(max_e_abs_photocurrent, max_abs_photocurrent, 'o', color='#0284c7', markersize=8, markeredgecolor='#075985', markeredgewidth=1)
+        if min_abs_photocurrent is not None and min_e_abs_photocurrent is not None:
+            ax_graph.plot(min_e_abs_photocurrent, -min_abs_photocurrent, 'o', color='#0284c7', markersize=8, markeredgecolor='#075985', markeredgewidth=1)
         
         return ax_graph
 

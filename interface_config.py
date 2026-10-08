@@ -49,7 +49,12 @@ def base_window_cfg(mw, cfg):
     Configuration of the items outside the main window tabs.
     """
     # Lower bar
-    mw.output_folder_line.setText(mw.base_path)
+    import conf
+    out_folder = getattr(conf, "output_fortran_folder", mw.base_path)
+    clean = os.path.normpath(str(out_folder)).replace("\\", "/")
+    if not clean.endswith("/"):
+        clean += "/"
+    mw.output_folder_line.setText(clean)
 
 
 def structure_tab_cfg(mw, cfg):
@@ -123,25 +128,29 @@ def genetic_algorithm_tab_cfg(mw, cfg):
     """
     Configuration of the "Genetic Algorithm" tab on the main window.
     """
-    mw.ga_iter_spb.setValue(cfg["gene"].getint("iterations"))
-    mw.ga_pop_spb.setValue(cfg["gene"].getint("population"))
-    mw.ga_tgt_en_spb.setValue(cfg["gene"].getfloat("target_E"))
-    mw.ga_tgt_en_margin_spb.setValue(cfg["gene"].getfloat("target_E_margin"))
-    priorities = ["Energy", "Oscillator Strength"]
-    mw.ga_goal_cbox.clear()  # Clearing the combobox
-    for p in priorities:
-        mw.ga_goal_cbox.addItem(p)  # Filling the combobox
-    mw.ga_goal_cbox.setCurrentIndex(cfg["gene"].getint("goal"))
+    if "gene" in cfg:
+        mw.ga_iter_spb.setValue(cfg["gene"].getint("iterations", fallback=30))
+        mw.ga_pop_spb.setValue(cfg["gene"].getint("population", fallback=30))
+        mw.ga_tgt_en_spb.setValue(cfg["gene"].getfloat("target_E", fallback=300.0))
+        mw.ga_tgt_en_margin_spb.setValue(cfg["gene"].getfloat("target_E_margin", fallback=20.0))
+        if hasattr(mw, "ga_opt_pc_chkbx"):
+            mw.ga_opt_pc_chkbx.setChecked(cfg["gene"].getboolean("opt_pc", fallback=True))
+        if hasattr(mw, "ga_opt_os_chkbx"):
+            mw.ga_opt_os_chkbx.setChecked(cfg["gene"].getboolean("opt_os", fallback=True))
+        if hasattr(mw, "ga_limit_energy_chkbx"):
+            mw.ga_limit_energy_chkbx.setChecked(cfg["gene"].getboolean("limit_energy", fallback=True))
+
 
 
 def automation_tab_cfg(mw, cfg):
     """
     Configuration of the "Automation" tab on the main window.
     """
-    mw.auto_layer_spb.setValue(cfg["auto"].getint("target_layer"))
-    mw.auto_init_spb.setValue(cfg["auto"].getfloat("thickness_initial"))
-    mw.auto_step_spb.setValue(cfg["auto"].getfloat("thickness_step"))
-    mw.auto_final_spb.setValue(cfg["auto"].getfloat("thickness_final"))
+    if hasattr(mw, "auto_layer_spb"):
+        mw.auto_layer_spb.setValue(cfg["auto"].getint("target_layer"))
+        mw.auto_init_spb.setValue(cfg["auto"].getfloat("thickness_initial"))
+        mw.auto_step_spb.setValue(cfg["auto"].getfloat("thickness_step"))
+        mw.auto_final_spb.setValue(cfg["auto"].getfloat("thickness_final"))
 
 
 def advanced_tab_cfg(mw, cfg):

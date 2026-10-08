@@ -2572,291 +2572,745 @@
        <attribute name="title">
         <string>GA</string>
        </attribute>
-       <layout class="QHBoxLayout" name="horizontalLayout_11">
+       <layout class="QHBoxLayout" name="horizontalLayout_ga_tab">
         <property name="spacing">
-         <number>2</number>
+         <number>6</number>
         </property>
         <property name="leftMargin">
-         <number>0</number>
+         <number>6</number>
         </property>
         <property name="topMargin">
-         <number>0</number>
+         <number>6</number>
         </property>
         <property name="rightMargin">
-         <number>0</number>
+         <number>6</number>
         </property>
         <property name="bottomMargin">
-         <number>0</number>
+         <number>6</number>
         </property>
         <item>
-         <layout class="QGridLayout" name="gridLayout_5">
-          <item row="9" column="1">
-           <widget class="QSpinBox" name="spinBox"/>
-          </item>
-          <item row="6" column="0">
-           <widget class="QLabel" name="label_29">
-            <property name="text">
-             <string>Crossover Probability</string>
-            </property>
+         <widget class="QSplitter" name="ga_splitter">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <widget class="QScrollArea" name="ga_scroll_area">
+           <property name="widgetResizable">
+            <bool>true</bool>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>400</width>
+             <height>0</height>
+            </size>
+           </property>
+           <widget class="QWidget" name="ga_controls_widget">
+            <layout class="QVBoxLayout" name="ga_controls_layout">
+             <property name="spacing">
+              <number>8</number>
+             </property>
+             <property name="leftMargin">
+              <number>6</number>
+             </property>
+             <property name="topMargin">
+              <number>6</number>
+             </property>
+             <property name="rightMargin">
+              <number>6</number>
+             </property>
+             <property name="bottomMargin">
+              <number>6</number>
+             </property>
+             <item>
+              <widget class="QGroupBox" name="grp_ga_params">
+               <property name="title">
+                <string>Parâmetros do Algoritmo Genético (DEAP)</string>
+               </property>
+               <layout class="QGridLayout" name="grid_ga_params">
+                <property name="spacing">
+                 <number>6</number>
+                </property>
+                <item row="0" column="0">
+                 <widget class="QLabel" name="lbl_ga_num_params">
+                  <property name="text"><string>Parâmetros a Otimizar:</string></property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QComboBox" name="ga_num_params_cbox">
+                  <item><property name="text"><string>3 Parâmetros</string></property></item>
+                  <item><property name="text"><string>5 Parâmetros</string></property></item>
+                  <item><property name="text"><string>7 Parâmetros</string></property></item>
+                 </widget>
+                </item>
+                <item row="0" column="2">
+                 <widget class="QPushButton" name="btn_help_params">
+                  <property name="maximumSize"><size><width>26</width><height>24</height></size></property>
+                  <property name="text"><string>?</string></property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QLabel" name="lbl_ga_pop">
+                  <property name="text"><string>População (Indivíduos):</string></property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QSpinBox" name="ga_pop_spb">
+                  <property name="minimum"><number>4</number></property>
+                  <property name="maximum"><number>500</number></property>
+                  <property name="value"><number>30</number></property>
+                 </widget>
+                </item>
+                <item row="1" column="2">
+                 <widget class="QPushButton" name="btn_help_pop">
+                  <property name="maximumSize"><size><width>26</width><height>24</height></size></property>
+                  <property name="text"><string>?</string></property>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QLabel" name="lbl_ga_iter">
+                  <property name="text"><string>Número de Gerações:</string></property>
+                 </widget>
+                </item>
+                <item row="2" column="1">
+                 <widget class="QSpinBox" name="ga_iter_spb">
+                  <property name="minimum"><number>1</number></property>
+                  <property name="maximum"><number>1000</number></property>
+                  <property name="value"><number>30</number></property>
+                 </widget>
+                </item>
+                <item row="2" column="2">
+                 <widget class="QPushButton" name="btn_help_iter">
+                  <property name="maximumSize"><size><width>26</width><height>24</height></size></property>
+                  <property name="text"><string>?</string></property>
+                 </widget>
+                </item>
+                <item row="3" column="0">
+                 <widget class="QLabel" name="lbl_ga_elit">
+                  <property name="text"><string>Elitismo (Melhores Indivíduos):</string></property>
+                 </widget>
+                </item>
+                <item row="3" column="1">
+                 <widget class="QSpinBox" name="ga_elit_spb">
+                  <property name="minimum"><number>0</number></property>
+                  <property name="maximum"><number>20</number></property>
+                  <property name="value"><number>2</number></property>
+                 </widget>
+                </item>
+                <item row="3" column="2">
+                 <widget class="QPushButton" name="btn_help_elit">
+                  <property name="maximumSize"><size><width>26</width><height>24</height></size></property>
+                  <property name="text"><string>?</string></property>
+                 </widget>
+                </item>
+                <item row="4" column="0">
+                 <widget class="QLabel" name="lbl_ga_cross_prob">
+                  <property name="text"><string>Probabilidade Crossover:</string></property>
+                 </widget>
+                </item>
+                <item row="4" column="1">
+                 <widget class="QDoubleSpinBox" name="ga_cross_prob_spb">
+                  <property name="decimals"><number>2</number></property>
+                  <property name="minimum"><double>0.0</double></property>
+                  <property name="maximum"><double>1.0</double></property>
+                  <property name="singleStep"><double>0.05</double></property>
+                  <property name="value"><double>0.80</double></property>
+                 </widget>
+                </item>
+                <item row="4" column="2">
+                 <widget class="QPushButton" name="btn_help_cross_prob">
+                  <property name="maximumSize"><size><width>26</width><height>24</height></size></property>
+                  <property name="text"><string>?</string></property>
+                 </widget>
+                </item>
+                <item row="5" column="0">
+                 <widget class="QLabel" name="lbl_ga_cross_type">
+                  <property name="text"><string>Tipo de Crossover:</string></property>
+                 </widget>
+                </item>
+                <item row="5" column="1">
+                 <widget class="QComboBox" name="ga_cross_cbox">
+                  <item><property name="text"><string>Uniforme</string></property></item>
+                  <item><property name="text"><string>Ponto Único</string></property></item>
+                  <item><property name="text"><string>Dois Pontos</string></property></item>
+                 </widget>
+                </item>
+                <item row="5" column="2">
+                 <widget class="QPushButton" name="btn_help_cross_type">
+                  <property name="maximumSize"><size><width>26</width><height>24</height></size></property>
+                  <property name="text"><string>?</string></property>
+                 </widget>
+                </item>
+                <item row="6" column="0">
+                 <widget class="QLabel" name="lbl_ga_mut_prob">
+                  <property name="text"><string>Probabilidade Mutação:</string></property>
+                 </widget>
+                </item>
+                <item row="6" column="1">
+                 <widget class="QDoubleSpinBox" name="ga_mut_prob_spb">
+                  <property name="decimals"><number>2</number></property>
+                  <property name="minimum"><double>0.0</double></property>
+                  <property name="maximum"><double>1.0</double></property>
+                  <property name="singleStep"><double>0.01</double></property>
+                  <property name="value"><double>0.15</double></property>
+                 </widget>
+                </item>
+                <item row="6" column="2">
+                 <widget class="QPushButton" name="btn_help_mut">
+                  <property name="maximumSize"><size><width>26</width><height>24</height></size></property>
+                  <property name="text"><string>?</string></property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QGroupBox" name="grp_ga_parallel">
+               <property name="title">
+                <string>Simulações em Paralelo</string>
+               </property>
+               <layout class="QGridLayout" name="grid_ga_parallel">
+                <property name="spacing">
+                 <number>6</number>
+                </property>
+                <item row="0" column="0" colspan="2">
+                 <widget class="QCheckBox" name="ga_parallel_chkbx">
+                  <property name="text">
+                   <string>Habilitar simulações em paralelo</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="2">
+                 <widget class="QPushButton" name="btn_help_parallel">
+                  <property name="maximumSize">
+                   <size>
+                    <width>26</width>
+                    <height>24</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>?</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QLabel" name="lbl_ga_cores">
+                  <property name="text">
+                   <string>Núcleos de CPU (Cores):</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QSpinBox" name="ga_parallel_cores_spb">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="minimum">
+                   <number>1</number>
+                  </property>
+                  <property name="maximum">
+                   <number>32</number>
+                  </property>
+                  <property name="value">
+                   <number>4</number>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QGroupBox" name="grp_ga_seeds">
+               <property name="title">
+                <string>População Inicial / Sementes (Geração 1)</string>
+               </property>
+               <layout class="QVBoxLayout" name="vbox_ga_seeds">
+                <property name="spacing">
+                 <number>6</number>
+                </property>
+                <item>
+                 <layout class="QHBoxLayout" name="hbox_seeds_top">
+                  <item>
+                   <widget class="QCheckBox" name="ga_use_seeds_chkbx">
+                    <property name="text">
+                     <string>Usar sementes / população inicial</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="btn_help_seeds">
+                    <property name="maximumSize">
+                     <size>
+                      <width>26</width>
+                      <height>24</height>
+                     </size>
+                    </property>
+                    <property name="text">
+                     <string>?</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <widget class="QPlainTextEdit" name="ga_seeds_txt">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="maximumHeight">
+                   <number>75</number>
+                  </property>
+                  <property name="placeholderText">
+                   <string>Exemplo (1 indivíduo por linha ou lista Python):
+[20, 70, 25]
+[30, 80, 20]</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <layout class="QHBoxLayout" name="hbox_seeds_btns">
+                  <item>
+                   <widget class="QPushButton" name="ga_add_current_seed_btn">
+                    <property name="enabled">
+                     <bool>false</bool>
+                    </property>
+                    <property name="text">
+                     <string>Adicionar Estrutura Atual</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="ga_clear_seeds_btn">
+                    <property name="enabled">
+                     <bool>false</bool>
+                    </property>
+                    <property name="text">
+                     <string>Limpar</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QGroupBox" name="grp_ga_goal">
+               <property name="title">
+                <string>Objetivo de Otimização</string>
+               </property>
+               <layout class="QGridLayout" name="grid_ga_goal">
+                <property name="spacing">
+                 <number>6</number>
+                </property>
+                <item row="0" column="0" colspan="2">
+                 <widget class="QCheckBox" name="ga_opt_pc_chkbx">
+                  <property name="text"><string>Otimizar Fotocorrente (PC)</string></property>
+                  <property name="checked"><bool>true</bool></property>
+                 </widget>
+                </item>
+                <item row="0" column="2">
+                 <widget class="QPushButton" name="btn_help_goal">
+                  <property name="maximumSize"><size><width>26</width><height>24</height></size></property>
+                  <property name="text"><string>?</string></property>
+                 </widget>
+                </item>
+                <item row="1" column="0" colspan="2">
+                 <widget class="QCheckBox" name="ga_opt_os_chkbx">
+                  <property name="text"><string>Otimizar Força de Oscilador (OS)</string></property>
+                  <property name="checked"><bool>true</bool></property>
+                 </widget>
+                </item>
+                <item row="2" column="0" colspan="2">
+                 <widget class="QCheckBox" name="ga_limit_energy_chkbx">
+                  <property name="text"><string>Limitar à faixa de energia proposta</string></property>
+                  <property name="checked"><bool>true</bool></property>
+                 </widget>
+                </item>
+                <item row="3" column="0">
+                 <widget class="QLabel" name="lbl_ga_tgt_en">
+                  <property name="text"><string>Energia Alvo (meV):</string></property>
+                 </widget>
+                </item>
+                <item row="3" column="1">
+                 <widget class="QDoubleSpinBox" name="ga_tgt_en_spb">
+                  <property name="decimals"><number>1</number></property>
+                  <property name="minimum"><double>0.0</double></property>
+                  <property name="maximum"><double>2000.0</double></property>
+                  <property name="singleStep"><double>1.0</double></property>
+                  <property name="value"><double>300.0</double></property>
+                 </widget>
+                </item>
+                <item row="3" column="2">
+                 <widget class="QPushButton" name="btn_help_tgt_en">
+                  <property name="maximumSize"><size><width>26</width><height>24</height></size></property>
+                  <property name="text"><string>?</string></property>
+                 </widget>
+                </item>
+                <item row="4" column="0">
+                 <widget class="QLabel" name="lbl_ga_tgt_margin">
+                  <property name="text"><string>Margem (meV):</string></property>
+                 </widget>
+                </item>
+                <item row="4" column="1">
+                 <widget class="QDoubleSpinBox" name="ga_tgt_en_margin_spb">
+                  <property name="decimals"><number>1</number></property>
+                  <property name="minimum"><double>0.1</double></property>
+                  <property name="maximum"><double>500.0</double></property>
+                  <property name="singleStep"><double>1.0</double></property>
+                  <property name="value"><double>20.0</double></property>
+                 </widget>
+                </item>
+                <item row="4" column="2">
+                 <widget class="QPushButton" name="btn_help_tgt_margin">
+                  <property name="maximumSize"><size><width>26</width><height>24</height></size></property>
+                  <property name="text"><string>?</string></property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QGroupBox" name="grp_ga_csv">
+               <property name="title">
+                <string>Histórico e Continuação (CSV)</string>
+               </property>
+               <layout class="QVBoxLayout" name="vbox_ga_csv">
+                <property name="spacing">
+                 <number>6</number>
+                </property>
+                <item>
+                 <layout class="QHBoxLayout" name="hbox_resume">
+                  <item>
+                   <widget class="QCheckBox" name="ga_resume_chkbx">
+                    <property name="text"><string>Continuar otimização existente</string></property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="btn_help_resume">
+                    <property name="maximumSize"><size><width>26</width><height>24</height></size></property>
+                    <property name="text"><string>?</string></property>
+                 </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <layout class="QHBoxLayout" name="hbox_csv_sel">
+                  <item>
+                   <widget class="QLineEdit" name="ga_csv_path_txt">
+                    <property name="placeholderText"><string>Selecione um arquivo CSV...</string></property>
+                    <property name="readOnly"><bool>true</bool></property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="ga_select_csv_btn">
+                    <property name="text"><string>Buscar...</string></property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="ga_plot_csv_btn">
+                  <property name="text"><string>Carregar e Visualizar Gráfico do CSV</string></property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QGroupBox" name="grp_ga_exec">
+               <property name="title">
+                <string>Execução</string>
+               </property>
+               <layout class="QVBoxLayout" name="vbox_ga_exec">
+                <property name="spacing">
+                 <number>6</number>
+                </property>
+                <item>
+                 <layout class="QHBoxLayout" name="hbox_ga_btns">
+                  <item>
+                   <widget class="QPushButton" name="ga_run_btn">
+                    <property name="font">
+                     <font>
+                      <weight>75</weight>
+                      <bold>true</bold>
+                     </font>
+                    </property>
+                    <property name="styleSheet">
+                     <string>background-color: #27ae60; color: white; padding: 6px; border-radius: 3px;</string>
+                    </property>
+                    <property name="text"><string>Iniciar Otimização</string></property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="ga_stop_btn">
+                    <property name="enabled"><bool>false</bool></property>
+                    <property name="font">
+                     <font>
+                      <weight>75</weight>
+                      <bold>true</bold>
+                     </font>
+                    </property>
+                    <property name="styleSheet">
+                     <string>background-color: #c0392b; color: white; padding: 6px; border-radius: 3px;</string>
+                    </property>
+                    <property name="text"><string>Parar</string></property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <widget class="QProgressBar" name="ga_progress_bar">
+                  <property name="value"><number>0</number></property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="ga_status_lbl">
+                  <property name="wordWrap"><bool>true</bool></property>
+                  <property name="text"><string>Status: Pronto para iniciar.</string></property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <spacer name="ga_vertical_spacer">
+               <property name="orientation"><enum>Qt::Vertical</enum></property>
+               <property name="sizeHint" stdset="0">
+                <size><width>20</width><height>20</height></size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
            </widget>
-          </item>
-          <item row="0" column="0" colspan="2">
-           <widget class="QLabel" name="label_34">
-            <property name="text">
-             <string>GA Options</string>
+          </widget>
+          <widget class="QWidget" name="ga_right_widget">
+           <layout class="QVBoxLayout" name="ga_right_layout">
+            <property name="spacing">
+             <number>4</number>
             </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
+            <property name="leftMargin">
+             <number>4</number>
             </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="label_49">
-            <property name="text">
-             <string>Mutation Probability</string>
+            <property name="topMargin">
+             <number>4</number>
             </property>
-           </widget>
-          </item>
-          <item row="13" column="0">
-           <widget class="QLabel" name="label_26">
-            <property name="text">
-             <string>Target Energy Margin</string>
+            <property name="rightMargin">
+             <number>4</number>
             </property>
-           </widget>
-          </item>
-          <item row="4" column="1">
-           <widget class="QDoubleSpinBox" name="ga_elit_spb"/>
-          </item>
-          <item row="11" column="0" colspan="2">
-           <widget class="QLabel" name="label_35">
-            <property name="text">
-             <string>Targets</string>
+            <property name="bottomMargin">
+             <number>4</number>
             </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="12" column="0">
-           <widget class="QLabel" name="label_25">
-            <property name="text">
-             <string>Target Energy</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="label_28">
-            <property name="text">
-             <string>Elit Ratio</string>
-            </property>
-           </widget>
-          </item>
-          <item row="9" column="0">
-           <widget class="QLabel" name="label_32">
-            <property name="text">
-             <string>Max Iter Without Improv</string>
-            </property>
-           </widget>
-          </item>
-          <item row="15" column="1">
-           <spacer name="verticalSpacer_6">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="1" column="1">
-           <widget class="QSpinBox" name="ga_iter_spb"/>
-          </item>
-          <item row="8" column="0">
-           <widget class="QLabel" name="label_31">
-            <property name="text">
-             <string>Crossover Type</string>
-            </property>
-           </widget>
-          </item>
-          <item row="8" column="1">
-           <widget class="QComboBox" name="ga_cross_cbox"/>
-          </item>
-          <item row="3" column="1">
-           <widget class="QDoubleSpinBox" name="doubleSpinBox_3"/>
-          </item>
-          <item row="14" column="1">
-           <widget class="QComboBox" name="ga_goal_cbox"/>
-          </item>
-          <item row="6" column="1">
-           <widget class="QDoubleSpinBox" name="ga_cross_prob_spb"/>
-          </item>
-          <item row="2" column="1">
-           <widget class="QSpinBox" name="ga_pop_spb"/>
-          </item>
-          <item row="13" column="1">
-           <widget class="QDoubleSpinBox" name="ga_tgt_en_margin_spb"/>
-          </item>
-          <item row="12" column="1">
-           <widget class="QDoubleSpinBox" name="ga_tgt_en_spb"/>
-          </item>
-          <item row="16" column="0" colspan="2">
-           <widget class="QPushButton" name="ga_run_btn">
-            <property name="text">
-             <string>Run</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_24">
-            <property name="text">
-             <string>Population Size</string>
-            </property>
-           </widget>
-          </item>
-          <item row="14" column="0">
-           <widget class="QLabel" name="label_27">
-            <property name="text">
-             <string>Goal</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_23">
-            <property name="text">
-             <string>Max Iterations</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="0">
-           <widget class="QLabel" name="label_30">
-            <property name="text">
-             <string>Parents Portion</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="1">
-           <widget class="QDoubleSpinBox" name="ga_parents_spb"/>
-          </item>
-          <item row="7" column="0">
-           <widget class="QLabel" name="label_33">
-            <property name="text">
-             <string>Multiple CPU</string>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="1">
-           <widget class="QComboBox" name="ga_multi_cpu_cbox"/>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <layout class="QGridLayout" name="gridLayout_11">
-          <item row="3" column="0">
-           <widget class="QLabel" name="label_43">
-            <property name="text">
-             <string>TextLabel</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="2">
-           <widget class="QLabel" name="label_40">
-            <property name="text">
-             <string>Thickness</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="3">
-           <widget class="QLabel" name="label_42">
-            <property name="text">
-             <string>Modify</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="4">
-           <widget class="QLabel" name="label_44">
-            <property name="text">
-             <string>Limits</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="4">
-           <widget class="QDoubleSpinBox" name="doubleSpinBox"/>
-          </item>
-          <item row="0" column="0" colspan="3">
-           <widget class="QLabel" name="label_41">
-            <property name="text">
-             <string>Layer Properties</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QLabel" name="label_39">
-            <property name="text">
-             <string>Materia</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_37">
-            <property name="text">
-             <string>#</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="3">
-           <widget class="QCheckBox" name="checkBox_2">
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="0">
-           <spacer name="verticalSpacer_7">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_38">
-            <property name="text">
-             <string>0</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="5">
-           <widget class="QDoubleSpinBox" name="doubleSpinBox_2"/>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <layout class="QVBoxLayout" name="ga_plot_layout">
-          <item>
-           <spacer name="horizontalSpacer_5">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-         </layout>
+            <item>
+             <widget class="QSplitter" name="ga_right_splitter">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <widget class="QWidget" name="ga_plot_widget">
+               <layout class="QVBoxLayout" name="ga_plot_layout">
+                <property name="spacing">
+                 <number>2</number>
+                </property>
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+               </layout>
+              </widget>
+              <widget class="QWidget" name="ga_bottom_widget">
+               <layout class="QVBoxLayout" name="ga_bottom_layout">
+                <property name="spacing">
+                 <number>0</number>
+                </property>
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <item>
+                 <widget class="QSplitter" name="ga_ind_plots_splitter">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <widget class="QGroupBox" name="grp_ga_best">
+                   <property name="title">
+                    <string>Indivíduo / Melhor Estrutura</string>
+                   </property>
+                   <layout class="QVBoxLayout" name="vbox_ga_best">
+                    <property name="spacing">
+                     <number>6</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>6</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>12</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>6</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>6</number>
+                    </property>
+                    <item>
+                     <widget class="QScrollArea" name="ga_best_scroll_area">
+                      <property name="widgetResizable">
+                       <bool>true</bool>
+                      </property>
+                      <property name="frameShape">
+                       <enum>QFrame::NoFrame</enum>
+                      </property>
+                      <widget class="QWidget" name="ga_best_scroll_content">
+                       <layout class="QVBoxLayout" name="ga_best_scroll_layout">
+                        <property name="leftMargin">
+                         <number>0</number>
+                        </property>
+                        <property name="topMargin">
+                         <number>0</number>
+                        </property>
+                        <property name="rightMargin">
+                         <number>0</number>
+                        </property>
+                        <property name="bottomMargin">
+                         <number>0</number>
+                        </property>
+                        <item>
+                         <widget class="QLabel" name="ga_best_summary_lbl">
+                          <property name="font">
+                           <font>
+                            <pointsize>9</pointsize>
+                           </font>
+                          </property>
+                          <property name="wordWrap">
+                           <bool>true</bool>
+                          </property>
+                          <property name="text">
+                           <string>Nenhuma simulação concluída ainda. Clique em qualquer indivíduo no gráfico de evolução para inspecionar seus gráficos e parâmetros.</string>
+                          </property>
+                          <property name="textInteractionFlags">
+                           <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+                          </property>
+                         </widget>
+                        </item>
+                       </layout>
+                      </widget>
+                     </widget>
+                    </item>
+                    <item>
+                     <layout class="QHBoxLayout" name="ga_best_row1_layout">
+                      <property name="spacing">
+                       <number>6</number>
+                      </property>
+                      <item>
+                       <widget class="QPushButton" name="ga_copy_text_btn">
+                        <property name="text">
+                         <string>📋 Copiar Texto</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="ga_show_best_btn">
+                        <property name="enabled">
+                         <bool>false</bool>
+                        </property>
+                        <property name="text">
+                         <string>Mostrar Melhor</string>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </item>
+                    <item>
+                     <widget class="QPushButton" name="ga_apply_to_fortran_btn">
+                      <property name="enabled">
+                       <bool>false</bool>
+                      </property>
+                      <property name="text">
+                       <string>Carregar na Aba Fortran Sim</string>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </widget>
+                  <widget class="QWidget" name="ga_ind_plot_widget1">
+                   <layout class="QVBoxLayout" name="ga_ind_plot_layout1">
+                    <property name="spacing">
+                     <number>2</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
+                    </property>
+                   </layout>
+                  </widget>
+                  <widget class="QWidget" name="ga_ind_plot_widget2">
+                   <layout class="QVBoxLayout" name="ga_ind_plot_layout2">
+                    <property name="spacing">
+                     <number>2</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
+                    </property>
+                   </layout>
+                  </widget>
+                  <widget class="QWidget" name="ga_ind_plot_widget3">
+                   <layout class="QVBoxLayout" name="ga_ind_plot_layout3">
+                    <property name="spacing">
+                     <number>2</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
+                    </property>
+                   </layout>
+                  </widget>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -3109,34 +3563,212 @@
           </widget>
           <widget class="QWidget" name="fortran_table_widget">
            <layout class="QVBoxLayout" name="fortran_table_layout">
+            <property name="spacing">
+             <number>4</number>
+            </property>
+            <property name="leftMargin">
+             <number>2</number>
+            </property>
+            <property name="topMargin">
+             <number>2</number>
+            </property>
+            <property name="rightMargin">
+             <number>2</number>
+            </property>
+            <property name="bottomMargin">
+             <number>2</number>
+            </property>
             <item>
-             <widget class="QLabel" name="lbl_simulated_table">
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-                <weight>75</weight>
-                <bold>true</bold>
-               </font>
+             <widget class="QSplitter" name="fortran_table_vsplitter">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
               </property>
-              <property name="text">
-               <string>Simulated Samples</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QTableWidget" name="fortran_samples_table">
-              <property name="minimumSize">
-               <size>
-                <width>350</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="selectionBehavior">
-               <enum>QAbstractItemView::SelectRows</enum>
-              </property>
-              <property name="editTriggers">
-               <enum>QAbstractItemView::NoEditTriggers</enum>
-              </property>
+              <widget class="QWidget" name="fortran_table_top_widget">
+               <layout class="QVBoxLayout" name="fortran_table_top_layout">
+                <property name="spacing">
+                 <number>4</number>
+                </property>
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <item>
+                 <layout class="QHBoxLayout" name="fortran_table_header_layout">
+                  <property name="spacing">
+                   <number>6</number>
+                  </property>
+                  <item>
+                   <widget class="QLabel" name="lbl_simulated_table">
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                      <weight>75</weight>
+                      <bold>true</bold>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>Amostras Simuladas</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="lbl_fortran_filter_status">
+                    <property name="font">
+                     <font>
+                      <pointsize>8</pointsize>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>(Todas visíveis)</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="spacer_table_hdr">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>10</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="btn_fortran_filter">
+                    <property name="text">
+                     <string>🔍 Filtros Excel</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="btn_fortran_clear_filters">
+                    <property name="text">
+                     <string>✖ Limpar</string>
+                    </property>
+                    <property name="enabled">
+                     <bool>false</bool>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <widget class="QTableWidget" name="fortran_samples_table">
+                  <property name="minimumSize">
+                   <size>
+                    <width>320</width>
+                    <height>120</height>
+                   </size>
+                  </property>
+                  <property name="selectionBehavior">
+                   <enum>QAbstractItemView::SelectRows</enum>
+                  </property>
+                  <property name="editTriggers">
+                   <enum>QAbstractItemView::NoEditTriggers</enum>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+              <widget class="QWidget" name="fortran_table_bottom_widget">
+               <layout class="QVBoxLayout" name="fortran_table_bottom_layout">
+                <property name="spacing">
+                 <number>4</number>
+                </property>
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>4</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <item>
+                 <layout class="QHBoxLayout" name="fortran_table_plot_ctrl_layout">
+                  <property name="spacing">
+                   <number>6</number>
+                  </property>
+                  <item>
+                   <widget class="QLabel" name="lbl_table_plot_title">
+                    <property name="font">
+                     <font>
+                      <pointsize>9</pointsize>
+                      <weight>75</weight>
+                      <bold>true</bold>
+                     </font>
+                    </property>
+                    <property name="text">
+                     <string>Gráfico:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="lbl_plot_x">
+                    <property name="text">
+                     <string>Eixo X:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QComboBox" name="fortran_plot_x_cbox"/>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="lbl_plot_y">
+                    <property name="text">
+                     <string>Eixo Y:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QComboBox" name="fortran_plot_y_cbox"/>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="btn_fortran_refresh_plot">
+                    <property name="text">
+                     <string>🔄</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <widget class="QWidget" name="fortran_table_plot_widget">
+                  <layout class="QVBoxLayout" name="fortran_table_plot_layout">
+                   <property name="spacing">
+                    <number>0</number>
+                   </property>
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
+                  </layout>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
              </widget>
             </item>
            </layout>
@@ -3149,122 +3781,599 @@
        <attribute name="title">
         <string>Automate</string>
        </attribute>
-       <layout class="QHBoxLayout" name="horizontalLayout_5">
+       <layout class="QHBoxLayout" name="auto_main_layout">
+        <property name="spacing">
+         <number>4</number>
+        </property>
+        <property name="leftMargin">
+         <number>4</number>
+        </property>
+        <property name="topMargin">
+         <number>4</number>
+        </property>
+        <property name="rightMargin">
+         <number>4</number>
+        </property>
+        <property name="bottomMargin">
+         <number>4</number>
+        </property>
         <item>
-         <layout class="QGridLayout" name="gridLayout_8">
-          <item row="0" column="3">
-           <widget class="QLabel" name="label_22">
-            <property name="text">
-             <string>Final Thickness</string>
-            </property>
+         <widget class="QSplitter" name="auto_splitter">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <widget class="QScrollArea" name="auto_controls_scroll">
+           <property name="widgetResizable">
+            <bool>true</bool>
+           </property>
+           <property name="frameShape">
+            <enum>QFrame::NoFrame</enum>
+           </property>
+           <widget class="QWidget" name="auto_controls_content">
+            <layout class="QVBoxLayout" name="auto_controls_layout">
+             <property name="spacing">
+              <number>8</number>
+             </property>
+             <property name="leftMargin">
+              <number>4</number>
+             </property>
+             <property name="topMargin">
+              <number>4</number>
+             </property>
+             <property name="rightMargin">
+              <number>6</number>
+             </property>
+             <property name="bottomMargin">
+              <number>4</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="lbl_auto_title">
+               <property name="font">
+                <font>
+                 <pointsize>11</pointsize>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>Varredura Automatizada de Parâmetros</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="lbl_auto_desc">
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
+               <property name="text">
+                <string>Defina cada um dos 7 parâmetros como fixo ou variável (varredura com início, fim e passo). O sistema calculará todas as combinações e executará em lote.</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QGroupBox" name="grp_auto_params">
+               <property name="title">
+                <string>1. Configuração dos 7 Parâmetros Quânticos</string>
+               </property>
+               <layout class="QVBoxLayout" name="auto_params_layout">
+                <property name="spacing">
+                 <number>6</number>
+                </property>
+                <!-- Parameter 0: LLQW -->
+                <item>
+                 <widget class="QFrame" name="auto_frame_0">
+                  <property name="frameShape">
+                   <enum>QFrame::StyledPanel</enum>
+                  </property>
+                  <layout class="QGridLayout" name="auto_grid_0">
+                   <item row="0" column="0" colspan="2">
+                    <widget class="QLabel" name="auto_lbl_0">
+                     <property name="font">
+                      <font><weight>75</weight><bold>true</bold></font>
+                     </property>
+                     <property name="text">
+                      <string>s0: LLQW (Nº Poços Esquerdos)</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="2">
+                    <widget class="QComboBox" name="auto_mode_0_cbox">
+                     <item><property name="text"><string>Fixo</string></property></item>
+                     <item><property name="text"><string>Varredura</string></property></item>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="auto_fix_lbl_0"><property name="text"><string>Valor Fixo:</string></property></widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QSpinBox" name="auto_fixed_0_spb">
+                     <property name="minimum"><number>0</number></property>
+                     <property name="maximum"><number>50</number></property>
+                     <property name="value"><number>5</number></property>
+                    </widget>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="auto_swp_lbl_0"><property name="text"><string>Início / Fim / Passo:</string></property></widget>
+                   </item>
+                   <item row="2" column="1">
+                    <layout class="QHBoxLayout" name="auto_swp_box_0">
+                     <item><widget class="QSpinBox" name="auto_start_0_spb"><property name="minimum"><number>0</number></property><property name="maximum"><number>50</number></property><property name="value"><number>1</number></property></widget></item>
+                     <item><widget class="QSpinBox" name="auto_end_0_spb"><property name="minimum"><number>0</number></property><property name="maximum"><number>50</number></property><property name="value"><number>5</number></property></widget></item>
+                     <item><widget class="QSpinBox" name="auto_step_0_spb"><property name="minimum"><number>1</number></property><property name="maximum"><number>20</number></property><property name="value"><number>1</number></property></widget></item>
+                     <item><widget class="QLabel" name="auto_pts_0_lbl"><property name="text"><string>(1 pts)</string></property></widget></item>
+                    </layout>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <!-- Parameter 1: LQW -->
+                <item>
+                 <widget class="QFrame" name="auto_frame_1">
+                  <property name="frameShape">
+                   <enum>QFrame::StyledPanel</enum>
+                  </property>
+                  <layout class="QGridLayout" name="auto_grid_1">
+                   <item row="0" column="0" colspan="2">
+                    <widget class="QLabel" name="auto_lbl_1">
+                     <property name="font">
+                      <font><weight>75</weight><bold>true</bold></font>
+                     </property>
+                     <property name="text">
+                      <string>s1: LQW (Poço Esquerdo [nm])</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="2">
+                    <widget class="QComboBox" name="auto_mode_1_cbox">
+                     <item><property name="text"><string>Fixo</string></property></item>
+                     <item><property name="text"><string>Varredura</string></property></item>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="auto_fix_lbl_1"><property name="text"><string>Valor Fixo:</string></property></widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QDoubleSpinBox" name="auto_fixed_1_spb">
+                     <property name="decimals"><number>2</number></property>
+                     <property name="minimum"><double>0.5</double></property>
+                     <property name="maximum"><double>50.0</double></property>
+                     <property name="singleStep"><double>0.1</double></property>
+                     <property name="value"><double>6.3</double></property>
+                     <property name="suffix"><string> nm</string></property>
+                    </widget>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="auto_swp_lbl_1"><property name="text"><string>Início / Fim / Passo:</string></property></widget>
+                   </item>
+                   <item row="2" column="1">
+                    <layout class="QHBoxLayout" name="auto_swp_box_1">
+                     <item><widget class="QDoubleSpinBox" name="auto_start_1_spb"><property name="decimals"><number>2</number></property><property name="minimum"><double>0.5</double></property><property name="maximum"><double>50.0</double></property><property name="singleStep"><double>0.1</double></property><property name="value"><double>4.0</double></property></widget></item>
+                     <item><widget class="QDoubleSpinBox" name="auto_end_1_spb"><property name="decimals"><number>2</number></property><property name="minimum"><double>0.5</double></property><property name="maximum"><double>50.0</double></property><property name="singleStep"><double>0.1</double></property><property name="value"><double>8.0</double></property></widget></item>
+                     <item><widget class="QDoubleSpinBox" name="auto_step_1_spb"><property name="decimals"><number>2</number></property><property name="minimum"><double>0.1</double></property><property name="maximum"><double>10.0</double></property><property name="singleStep"><double>0.1</double></property><property name="value"><double>1.0</double></property></widget></item>
+                     <item><widget class="QLabel" name="auto_pts_1_lbl"><property name="text"><string>(1 pts)</string></property></widget></item>
+                    </layout>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <!-- Parameter 2: LQB -->
+                <item>
+                 <widget class="QFrame" name="auto_frame_2">
+                  <property name="frameShape">
+                   <enum>QFrame::StyledPanel</enum>
+                  </property>
+                  <layout class="QGridLayout" name="auto_grid_2">
+                   <item row="0" column="0" colspan="2">
+                    <widget class="QLabel" name="auto_lbl_2">
+                     <property name="font">
+                      <font><weight>75</weight><bold>true</bold></font>
+                     </property>
+                     <property name="text">
+                      <string>s2: LQB (Barreira Esquerda [nm])</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="2">
+                    <widget class="QComboBox" name="auto_mode_2_cbox">
+                     <item><property name="text"><string>Fixo</string></property></item>
+                     <item><property name="text"><string>Varredura</string></property></item>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="auto_fix_lbl_2"><property name="text"><string>Valor Fixo:</string></property></widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QDoubleSpinBox" name="auto_fixed_2_spb">
+                     <property name="decimals"><number>2</number></property>
+                     <property name="minimum"><double>0.5</double></property>
+                     <property name="maximum"><double>50.0</double></property>
+                     <property name="singleStep"><double>0.1</double></property>
+                     <property name="value"><double>11.0</double></property>
+                     <property name="suffix"><string> nm</string></property>
+                    </widget>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="auto_swp_lbl_2"><property name="text"><string>Início / Fim / Passo:</string></property></widget>
+                   </item>
+                   <item row="2" column="1">
+                    <layout class="QHBoxLayout" name="auto_swp_box_2">
+                     <item><widget class="QDoubleSpinBox" name="auto_start_2_spb"><property name="decimals"><number>2</number></property><property name="minimum"><double>0.5</double></property><property name="maximum"><double>50.0</double></property><property name="singleStep"><double>0.1</double></property><property name="value"><double>8.0</double></property></widget></item>
+                     <item><widget class="QDoubleSpinBox" name="auto_end_2_spb"><property name="decimals"><number>2</number></property><property name="minimum"><double>0.5</double></property><property name="maximum"><double>50.0</double></property><property name="singleStep"><double>0.1</double></property><property name="value"><double>14.0</double></property></widget></item>
+                     <item><widget class="QDoubleSpinBox" name="auto_step_2_spb"><property name="decimals"><number>2</number></property><property name="minimum"><double>0.1</double></property><property name="maximum"><double>10.0</double></property><property name="singleStep"><double>0.1</double></property><property name="value"><double>1.0</double></property></widget></item>
+                     <item><widget class="QLabel" name="auto_pts_2_lbl"><property name="text"><string>(1 pts)</string></property></widget></item>
+                    </layout>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <!-- Parameter 3: MQW -->
+                <item>
+                 <widget class="QFrame" name="auto_frame_3">
+                  <property name="frameShape">
+                   <enum>QFrame::StyledPanel</enum>
+                  </property>
+                  <layout class="QGridLayout" name="auto_grid_3">
+                   <item row="0" column="0" colspan="2">
+                    <widget class="QLabel" name="auto_lbl_3">
+                     <property name="font">
+                      <font><weight>75</weight><bold>true</bold></font>
+                     </property>
+                     <property name="text">
+                      <string>s3: MQW (Poço Central [nm])</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="2">
+                    <widget class="QComboBox" name="auto_mode_3_cbox">
+                     <item><property name="text"><string>Fixo</string></property></item>
+                     <item><property name="text"><string>Varredura</string></property></item>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="auto_fix_lbl_3"><property name="text"><string>Valor Fixo:</string></property></widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QDoubleSpinBox" name="auto_fixed_3_spb">
+                     <property name="decimals"><number>2</number></property>
+                     <property name="minimum"><double>0.5</double></property>
+                     <property name="maximum"><double>50.0</double></property>
+                     <property name="singleStep"><double>0.1</double></property>
+                     <property name="value"><double>1.6</double></property>
+                     <property name="suffix"><string> nm</string></property>
+                    </widget>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="auto_swp_lbl_3"><property name="text"><string>Início / Fim / Passo:</string></property></widget>
+                   </item>
+                   <item row="2" column="1">
+                    <layout class="QHBoxLayout" name="auto_swp_box_3">
+                     <item><widget class="QDoubleSpinBox" name="auto_start_3_spb"><property name="decimals"><number>2</number></property><property name="minimum"><double>0.5</double></property><property name="maximum"><double>50.0</double></property><property name="singleStep"><double>0.1</double></property><property name="value"><double>1.0</double></property></widget></item>
+                     <item><widget class="QDoubleSpinBox" name="auto_end_3_spb"><property name="decimals"><number>2</number></property><property name="minimum"><double>0.5</double></property><property name="maximum"><double>50.0</double></property><property name="singleStep"><double>0.1</double></property><property name="value"><double>3.0</double></property></widget></item>
+                     <item><widget class="QDoubleSpinBox" name="auto_step_3_spb"><property name="decimals"><number>2</number></property><property name="minimum"><double>0.1</double></property><property name="maximum"><double>10.0</double></property><property name="singleStep"><double>0.1</double></property><property name="value"><double>0.5</double></property></widget></item>
+                     <item><widget class="QLabel" name="auto_pts_3_lbl"><property name="text"><string>(1 pts)</string></property></widget></item>
+                    </layout>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <!-- Parameter 4: RLQW -->
+                <item>
+                 <widget class="QFrame" name="auto_frame_4">
+                  <property name="frameShape">
+                   <enum>QFrame::StyledPanel</enum>
+                  </property>
+                  <layout class="QGridLayout" name="auto_grid_4">
+                   <item row="0" column="0" colspan="2">
+                    <widget class="QLabel" name="auto_lbl_4">
+                     <property name="font">
+                      <font><weight>75</weight><bold>true</bold></font>
+                     </property>
+                     <property name="text">
+                      <string>s4: RLQW (Nº Poços Direitos)</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="2">
+                    <widget class="QComboBox" name="auto_mode_4_cbox">
+                     <item><property name="text"><string>Fixo</string></property></item>
+                     <item><property name="text"><string>Varredura</string></property></item>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="auto_fix_lbl_4"><property name="text"><string>Valor Fixo:</string></property></widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QSpinBox" name="auto_fixed_4_spb">
+                     <property name="minimum"><number>0</number></property>
+                     <property name="maximum"><number>50</number></property>
+                     <property name="value"><number>1</number></property>
+                    </widget>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="auto_swp_lbl_4"><property name="text"><string>Início / Fim / Passo:</string></property></widget>
+                   </item>
+                   <item row="2" column="1">
+                    <layout class="QHBoxLayout" name="auto_swp_box_4">
+                     <item><widget class="QSpinBox" name="auto_start_4_spb"><property name="minimum"><number>0</number></property><property name="maximum"><number>50</number></property><property name="value"><number>1</number></property></widget></item>
+                     <item><widget class="QSpinBox" name="auto_end_4_spb"><property name="minimum"><number>0</number></property><property name="maximum"><number>50</number></property><property name="value"><number>3</number></property></widget></item>
+                     <item><widget class="QSpinBox" name="auto_step_4_spb"><property name="minimum"><number>1</number></property><property name="maximum"><number>20</number></property><property name="value"><number>1</number></property></widget></item>
+                     <item><widget class="QLabel" name="auto_pts_4_lbl"><property name="text"><string>(1 pts)</string></property></widget></item>
+                    </layout>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <!-- Parameter 5: RQW -->
+                <item>
+                 <widget class="QFrame" name="auto_frame_5">
+                  <property name="frameShape">
+                   <enum>QFrame::StyledPanel</enum>
+                  </property>
+                  <layout class="QGridLayout" name="auto_grid_5">
+                   <item row="0" column="0" colspan="2">
+                    <widget class="QLabel" name="auto_lbl_5">
+                     <property name="font">
+                      <font><weight>75</weight><bold>true</bold></font>
+                     </property>
+                     <property name="text">
+                      <string>s5: RQW (Poço Direito [nm])</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="2">
+                    <widget class="QComboBox" name="auto_mode_5_cbox">
+                     <item><property name="text"><string>Fixo</string></property></item>
+                     <item><property name="text"><string>Varredura</string></property></item>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="auto_fix_lbl_5"><property name="text"><string>Valor Fixo:</string></property></widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QDoubleSpinBox" name="auto_fixed_5_spb">
+                     <property name="decimals"><number>2</number></property>
+                     <property name="minimum"><double>0.5</double></property>
+                     <property name="maximum"><double>50.0</double></property>
+                     <property name="singleStep"><double>0.1</double></property>
+                     <property name="value"><double>6.3</double></property>
+                     <property name="suffix"><string> nm</string></property>
+                    </widget>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="auto_swp_lbl_5"><property name="text"><string>Início / Fim / Passo:</string></property></widget>
+                   </item>
+                   <item row="2" column="1">
+                    <layout class="QHBoxLayout" name="auto_swp_box_5">
+                     <item><widget class="QDoubleSpinBox" name="auto_start_5_spb"><property name="decimals"><number>2</number></property><property name="minimum"><double>0.5</double></property><property name="maximum"><double>50.0</double></property><property name="singleStep"><double>0.1</double></property><property name="value"><double>4.0</double></property></widget></item>
+                     <item><widget class="QDoubleSpinBox" name="auto_end_5_spb"><property name="decimals"><number>2</number></property><property name="minimum"><double>0.5</double></property><property name="maximum"><double>50.0</double></property><property name="singleStep"><double>0.1</double></property><property name="value"><double>8.0</double></property></widget></item>
+                     <item><widget class="QDoubleSpinBox" name="auto_step_5_spb"><property name="decimals"><number>2</number></property><property name="minimum"><double>0.1</double></property><property name="maximum"><double>10.0</double></property><property name="singleStep"><double>0.1</double></property><property name="value"><double>1.0</double></property></widget></item>
+                     <item><widget class="QLabel" name="auto_pts_5_lbl"><property name="text"><string>(1 pts)</string></property></widget></item>
+                    </layout>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <!-- Parameter 6: RQB -->
+                <item>
+                 <widget class="QFrame" name="auto_frame_6">
+                  <property name="frameShape">
+                   <enum>QFrame::StyledPanel</enum>
+                  </property>
+                  <layout class="QGridLayout" name="auto_grid_6">
+                   <item row="0" column="0" colspan="2">
+                    <widget class="QLabel" name="auto_lbl_6">
+                     <property name="font">
+                      <font><weight>75</weight><bold>true</bold></font>
+                     </property>
+                     <property name="text">
+                      <string>s6: RQB (Barreira Direita [nm])</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="2">
+                    <widget class="QComboBox" name="auto_mode_6_cbox">
+                     <item><property name="text"><string>Fixo</string></property></item>
+                     <item><property name="text"><string>Varredura</string></property></item>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="auto_fix_lbl_6"><property name="text"><string>Valor Fixo:</string></property></widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QDoubleSpinBox" name="auto_fixed_6_spb">
+                     <property name="decimals"><number>2</number></property>
+                     <property name="minimum"><double>0.5</double></property>
+                     <property name="maximum"><double>50.0</double></property>
+                     <property name="singleStep"><double>0.1</double></property>
+                     <property name="value"><double>11.0</double></property>
+                     <property name="suffix"><string> nm</string></property>
+                    </widget>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="auto_swp_lbl_6"><property name="text"><string>Início / Fim / Passo:</string></property></widget>
+                   </item>
+                   <item row="2" column="1">
+                    <layout class="QHBoxLayout" name="auto_swp_box_6">
+                     <item><widget class="QDoubleSpinBox" name="auto_start_6_spb"><property name="decimals"><number>2</number></property><property name="minimum"><double>0.5</double></property><property name="maximum"><double>50.0</double></property><property name="singleStep"><double>0.1</double></property><property name="value"><double>8.0</double></property></widget></item>
+                     <item><widget class="QDoubleSpinBox" name="auto_end_6_spb"><property name="decimals"><number>2</number></property><property name="minimum"><double>0.5</double></property><property name="maximum"><double>50.0</double></property><property name="singleStep"><double>0.1</double></property><property name="value"><double>14.0</double></property></widget></item>
+                     <item><widget class="QDoubleSpinBox" name="auto_step_6_spb"><property name="decimals"><number>2</number></property><property name="minimum"><double>0.1</double></property><property name="maximum"><double>10.0</double></property><property name="singleStep"><double>0.1</double></property><property name="value"><double>1.0</double></property></widget></item>
+                     <item><widget class="QLabel" name="auto_pts_6_lbl"><property name="text"><string>(1 pts)</string></property></widget></item>
+                    </layout>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QGroupBox" name="grp_auto_exec">
+               <property name="title">
+                <string>2. Estimativa &amp; Execução</string>
+               </property>
+               <layout class="QVBoxLayout" name="auto_exec_layout">
+                <property name="spacing">
+                 <number>6</number>
+                </property>
+                <item>
+                 <widget class="QLabel" name="auto_estimate_lbl">
+                  <property name="font">
+                   <font><pointsize>10</pointsize><weight>75</weight><bold>true</bold></font>
+                  </property>
+                  <property name="text">
+                   <string>🎯 Total de Simulações: 1</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="auto_copy_fortran_btn">
+                  <property name="text">
+                   <string>📋 Copiar Valores Atuais da Aba Fortran</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="auto_parallel_chkbx">
+                  <property name="text">
+                   <string>Habilitar Simulação em Paralelo (Multiprocessing)</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <layout class="QHBoxLayout" name="auto_cores_layout">
+                  <item>
+                   <widget class="QLabel" name="lbl_auto_cores">
+                    <property name="text">
+                     <string>Núcleos de CPU (Cores):</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QSpinBox" name="auto_cores_spb">
+                    <property name="minimum"><number>1</number></property>
+                    <property name="maximum"><number>32</number></property>
+                    <property name="value"><number>4</number></property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <layout class="QHBoxLayout" name="auto_btns_layout">
+                  <item>
+                   <widget class="QPushButton" name="auto_run_btn">
+                    <property name="text">
+                     <string>▶ Iniciar Varredura</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="auto_stop_btn">
+                    <property name="text">
+                     <string>⏹ Parar Varredura</string>
+                    </property>
+                    <property name="enabled">
+                     <bool>false</bool>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+               </layout>
+              </widget>
+             </item>
+            </layout>
            </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QDoubleSpinBox" name="auto_init_spb">
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </widget>
+          <widget class="QWidget" name="auto_results_widget">
+           <layout class="QVBoxLayout" name="auto_results_layout">
+            <property name="spacing">
+             <number>6</number>
             </property>
-            <property name="suffix">
-             <string> ML</string>
+            <property name="leftMargin">
+             <number>4</number>
             </property>
-            <property name="decimals">
-             <number>2</number>
+            <property name="topMargin">
+             <number>4</number>
             </property>
-            <property name="maximum">
-             <double>1000.000000000000000</double>
+            <property name="rightMargin">
+             <number>4</number>
             </property>
-            <property name="singleStep">
-             <double>0.100000000000000</double>
+            <property name="bottomMargin">
+             <number>4</number>
             </property>
-           </widget>
-          </item>
-          <item row="1" column="3">
-           <widget class="QDoubleSpinBox" name="auto_final_spb">
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-            <property name="suffix">
-             <string> ML</string>
-            </property>
-            <property name="decimals">
-             <number>2</number>
-            </property>
-            <property name="maximum">
-             <double>1000.000000000000000</double>
-            </property>
-            <property name="singleStep">
-             <double>0.010000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="2">
-           <widget class="QLabel" name="label_21">
-            <property name="text">
-             <string>Step</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QLabel" name="label_20">
-            <property name="text">
-             <string>Initial Thickness</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_19">
-            <property name="text">
-             <string>Target Layer</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="2">
-           <widget class="QDoubleSpinBox" name="auto_step_spb">
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-            <property name="suffix">
-             <string> ML</string>
-            </property>
-            <property name="decimals">
-             <number>2</number>
-            </property>
-            <property name="maximum">
-             <double>1000.000000000000000</double>
-            </property>
-            <property name="singleStep">
-             <double>0.010000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QSpinBox" name="auto_layer_spb">
-            <property name="value">
-             <number>0</number>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="3">
-           <widget class="QPushButton" name="auto_run_btn">
-            <property name="text">
-             <string>Run</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="3">
-           <spacer name="verticalSpacer_5">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-         </layout>
+            <item>
+             <widget class="QGroupBox" name="grp_auto_progress">
+              <property name="title">
+               <string>Progresso da Varredura</string>
+              </property>
+              <layout class="QVBoxLayout" name="auto_progress_layout">
+               <property name="spacing">
+                <number>4</number>
+               </property>
+               <item>
+                <widget class="QProgressBar" name="auto_progress_bar">
+                 <property name="value"><number>0</number></property>
+                 <property name="format"><string>%p% (%v/%m)</string></property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="auto_status_lbl">
+                 <property name="text">
+                  <string>Status: Pronto para iniciar varredura.</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="grp_auto_table">
+              <property name="title">
+               <string>Resultados da Varredura</string>
+              </property>
+              <layout class="QVBoxLayout" name="auto_table_inner_layout">
+               <property name="spacing">
+                <number>4</number>
+               </property>
+               <item>
+                <widget class="QTableWidget" name="auto_results_table">
+                 <property name="editTriggers">
+                  <enum>QAbstractItemView::NoEditTriggers</enum>
+                 </property>
+                 <property name="selectionBehavior">
+                  <enum>QAbstractItemView::SelectRows</enum>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="auto_table_actions_layout">
+                 <item>
+                  <widget class="QPushButton" name="auto_apply_to_fortran_btn">
+                   <property name="text">
+                    <string>Carregar Amostra Selecionada na Aba Fortran</string>
+                   </property>
+                   <property name="enabled"><bool>false</bool></property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="auto_export_csv_btn">
+                   <property name="text">
+                    <string>Exportar para CSV</string>
+                   </property>
+                   <property name="enabled"><bool>false</bool></property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </widget>
         </item>
        </layout>
       </widget>
