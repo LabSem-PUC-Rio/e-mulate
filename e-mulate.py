@@ -736,19 +736,21 @@ class FortranSimWorker(QThread):
     sig_started = pyqtSignal(str)                        # struct desc
     sig_finished = pyqtSignal(bool, object, str, float)  # success, sample_data, error_msg, elapsed_seconds
 
-    def __init__(self, struct, sim_options, output_folder):
+    def __init__(self, struct, sim_options, output_folder, engine: str = "fortran"):
         super().__init__()
         self.struct = struct
         self.sim_options = sim_options
         self.output_folder = output_folder
+        self.engine = engine
 
     def run(self):
         w_l, qw_l, qb_l, mqw, w_r, qw_r, qb_r = set_structure_values(self.struct)
-        desc = f"{int(w_l)}x{qw_l:.1f}_{qb_l:.1f} __{mqw:.1f}__ {int(w_r)}x{qw_r:.1f}_{qb_r:.1f}"
+        eng_label = "Python" if self.engine == "python" else "Fortran"
+        desc = f"[{eng_label}] {int(w_l)}x{qw_l:.1f}_{qb_l:.1f} __{mqw:.1f}__ {int(w_r)}x{qw_r:.1f}_{qb_r:.1f}"
         self.sig_started.emit(desc)
         t0 = time.time()
         try:
-            simulator = FortranSimulator(self.struct, sim_options=self.sim_options, output_folder=self.output_folder)
+            simulator = FortranSimulator(self.struct, sim_options=self.sim_options, output_folder=self.output_folder, engine=self.engine)
             sample_data = simulator.simulate()
             elapsed = time.time() - t0
             self.sig_finished.emit(True, sample_data, "", elapsed)
@@ -1541,6 +1543,36 @@ class MainWindow(QMainWindow):
         # Fortran Sim tab
         if hasattr(self, "tabWidget"):
             self.tabWidget.currentChanged.connect(self.OnMainTabChanged)
+
+        # Engine selector (Fortran vs Python)
+        if not hasattr(self, "fortran_engine_cbox"):
+            self.fortran_engine_cbox = QComboBox()
+            self.fortran_engine_cbox.addItem("⚡ Fortran (Binário)", "fortran")
+            self.fortran_engine_cbox.addItem("🐍 Python (NumPy)", "python")
+            self.fortran_engine_cbox.setStyleSheet(
+                "QComboBox { padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-weight: bold; font-size: 11px; background: #ffffff; color: #1e293b; min-height: 24px; }"
+                "QComboBox::drop-down { subcontrol-origin: padding; subcontrol-position: top right; width: 22px; border-left: 1px solid #cbd5e1; }"
+            )
+            self.fortran_engine_cbox.setToolTip("Selecione o motor de simulação: Fortran compilado (rápido) ou Python com NumPy (portável).")
+
+            # Inserir no layout exatamente acima do botão de execução (fortran_run_btn)
+            btn_parent = self.fortran_run_btn.parentWidget()
+            if btn_parent and btn_parent.layout():
+                parent_lay = btn_parent.layout()
+                idx = parent_lay.indexOf(self.fortran_run_btn)
+                if idx >= 0:
+                    lbl_eng = QLabel("Motor de Simulação:")
+                    lbl_eng.setStyleSheet("font-size: 10px; font-weight: bold; color: #475569; margin-top: 4px;")
+                    parent_lay.insertWidget(idx, lbl_eng)
+                    parent_lay.insertWidget(idx + 1, self.fortran_engine_cbox)
+
+            def _on_engine_changed(idx):
+                is_py = (idx == 1)
+                self.fortran_run_btn.setText("Run Python Simulation" if is_py else "Run Fortran Simulation")
+                self.PlotFortranBandStructure()
+
+            self.fortran_engine_cbox.currentIndexChanged.connect(_on_engine_changed)
+
         self.fortran_run_btn.clicked.connect(self.RunFortranSimulation)
         self.fortran_s0_spb.valueChanged.connect(self.PlotFortranBandStructure)
         self.fortran_s1_spb.valueChanged.connect(self.PlotFortranBandStructure)
@@ -2077,6 +2109,7 @@ class MainWindow(QMainWindow):
         self.ga_ind_plot_layout2.addWidget(self.ga_ind_nav2)
         self.ga_ind_subplot2 = self.ga_ind_fig2.add_subplot(111)
         self.ga_ind_subplot2.grid(True, axis="both")
+        self.ga_ind_canvas2.mpl_connect("button_press_event", self.OnGAIndOscPlotClicked)
 
         self.ga_ind_fig3 = plt.figure()
         self.ga_ind_canvas3 = FigureCanvas(self.ga_ind_fig3)
@@ -2101,6 +2134,7 @@ class MainWindow(QMainWindow):
         self.fortran_plot_layout1.addWidget(self.fortran_nav1)
         self.fortran_subplot1 = self.fortran_fig1.add_subplot(111)
         self.fortran_subplot1.grid(True, axis="both")
+        self.fortran_canvas1.mpl_connect("button_press_event", lambda event: self.OnFortranCanvasClicked(event, self.fortran_nav1, self.fortran_canvas1))
         self.show()
 
         self.fortran_fig2 = plt.figure()
@@ -2110,6 +2144,9 @@ class MainWindow(QMainWindow):
         self.fortran_plot_layout2.addWidget(self.fortran_nav2)
         self.fortran_subplot2 = self.fortran_fig2.add_subplot(111)
         self.fortran_subplot2.grid(True, axis="both")
+        self.fortran_canvas2.mpl_connect("button_press_event", lambda event: self.OnFortranCanvasClicked(event, self.fortran_nav2, self.fortran_canvas2))
+        self.fortran_canvas2.mpl_connect("button_press_event", self.OnFortranOscPlotPress)
+        self.fortran_canvas2.mpl_connect("button_release_event", self.OnFortranOscPlotRelease)
         self.show()
 
         self.fortran_fig3 = plt.figure()
@@ -2119,7 +2156,15 @@ class MainWindow(QMainWindow):
         self.fortran_plot_layout3.addWidget(self.fortran_nav3)
         self.fortran_subplot3 = self.fortran_fig3.add_subplot(111)
         self.fortran_subplot3.grid(True, axis="both")
+        self.fortran_canvas3.mpl_connect("button_press_event", lambda event: self.OnFortranCanvasClicked(event, self.fortran_nav3, self.fortran_canvas3))
         self.show()
+
+        # Enable box-zoom mode by default on the Fortran plots
+        for nav in (self.fortran_nav1, self.fortran_nav2, self.fortran_nav3):
+            if hasattr(nav, "zoom") and nav.mode != "zoom rect":
+                nav.zoom()
+
+        self._syncing_fortran_energy = False
 
         # Fortran table filtered samples plot
         if hasattr(self, "fortran_table_plot_layout"):
@@ -3063,13 +3108,18 @@ class MainWindow(QMainWindow):
         # mostrando na tela a classe criada para a segunda janela
         self.Sobre.show()
 
-    def PlotFortranBandStructure(self):
+    def PlotFortranBandStructure(self, selected_osc_index=None, folder_name=None):
         """
         Plots 3 figures for Fortran simulation tab:
         1. Potencial with wavefunctions (from simulation data if available, or structural profile).
         2. Oscillator Strength (OscStr).
         3. Photocurrent (PC).
         """
+        if selected_osc_index is not None:
+            self._fortran_selected_osc_index = selected_osc_index
+        elif not hasattr(self, "_fortran_selected_osc_index"):
+            self._fortran_selected_osc_index = None
+
         struct = [
             int(self.fortran_s0_spb.value()),
             round(self.fortran_s1_spb.value() * 10, 1),
@@ -3081,7 +3131,10 @@ class MainWindow(QMainWindow):
         ]
 
         import conf
+        from conf import resolve_simulation_paths
         output_fortran_folder = getattr(conf, "output_fortran_folder", "")
+        db_dir, sim_dir, pkl_dir, _ = resolve_simulation_paths(output_fortran_folder)
+
         sim_options = SimulationOptions(
             force_parser=False,
             force_simulation=False,
@@ -3090,7 +3143,38 @@ class MainWindow(QMainWindow):
             reference_pc=None,
             reference_pc_e=None
         )
-        simulator = FortranSimulator(struct, sim_options=sim_options, output_folder=output_fortran_folder)
+
+        chosen_engine = "python" if (hasattr(self, "fortran_engine_cbox") and self.fortran_engine_cbox.currentIndex() == 1) else "fortran"
+        if folder_name:
+            if folder_name.endswith("_python"):
+                chosen_engine = "python"
+            else:
+                chosen_engine = "fortran"
+            simulator = FortranSimulator(struct, sim_options=sim_options, output_folder=output_fortran_folder, engine=chosen_engine)
+        else:
+            # Check if simulation exists with currently chosen engine, or fallback to the other
+            sim_target = FortranSimulator(struct, sim_options=sim_options, output_folder=output_fortran_folder, engine=chosen_engine)
+            target_exists = (
+                os.path.exists(sim_target.potencial_file) and
+                os.path.exists(sim_target.wavefunction_file) and
+                os.path.exists(sim_target.oscstr_file) and
+                os.path.exists(sim_target.photocurrent_file)
+            )
+            if target_exists:
+                simulator = sim_target
+            else:
+                other_engine = "fortran" if chosen_engine == "python" else "python"
+                sim_other = FortranSimulator(struct, sim_options=sim_options, output_folder=output_fortran_folder, engine=other_engine)
+                other_exists = (
+                    os.path.exists(sim_other.potencial_file) and
+                    os.path.exists(sim_other.wavefunction_file) and
+                    os.path.exists(sim_other.oscstr_file) and
+                    os.path.exists(sim_other.photocurrent_file)
+                )
+                if other_exists:
+                    simulator = sim_other
+                else:
+                    simulator = sim_target
 
         # Clear subplots
         self.fortran_subplot1.clear()
@@ -3108,6 +3192,7 @@ class MainWindow(QMainWindow):
         if sim_exists:
             try:
                 sample_data = simulator.simulate()
+                self._fortran_sample_data = sample_data
 
                 # Plot 1: Potencial + Wavefunctions
                 Plotter.plot_structure(
@@ -3117,7 +3202,8 @@ class MainWindow(QMainWindow):
                     sample_data.autoenergias,
                     sample_data.wavefunctions,
                     sample_data.max_e_oscstr_index,
-                    -50, 700
+                    -50, 700,
+                    selected_osc_index=self._fortran_selected_osc_index
                 )
                 self.fortran_subplot1.set_title("Potencial e Funções de Onda")
 
@@ -3129,9 +3215,10 @@ class MainWindow(QMainWindow):
                     E0=sample_data.E0,
                     lim_E_min=-50,
                     lim_E_max=700,
-                    max_e_oscstr_index=sample_data.max_e_oscstr_index
+                    max_e_oscstr_index=sample_data.max_e_oscstr_index,
+                    selected_osc_index=self._fortran_selected_osc_index
                 )
-                self.fortran_subplot2.set_title("Força de Oscilador")
+                self.fortran_subplot2.set_title("Força de Oscilador\n(clique para destacar)", fontsize=9)
 
                 # Plot 3: Photocurrent
                 Plotter.plot_pc(
@@ -3146,7 +3233,7 @@ class MainWindow(QMainWindow):
                     min_abs_photocurrent=sample_data.min_abs_photocurrent,
                     min_e_abs_photocurrent=sample_data.min_e_abs_photocurrent
                 )
-                self.fortran_subplot3.set_title("Photocurrent")
+                self.fortran_subplot3.set_title("Photocurrent", fontsize=9)
 
                 # Display summary text in results text box
                 _structure = sample_data.structure
@@ -3172,12 +3259,163 @@ class MainWindow(QMainWindow):
             self._plot_fallback_band_profile(struct)
             self.fortran_output_txt.setText("Amostra ainda não simulada. Clique em 'Run Fortran Simulation' para ejecutar.")
 
+        # Re-conectar callbacks de sincronização de energia (necessário pois subplot.clear() remove callbacks)
+        self.fortran_subplot1.callbacks.connect("ylim_changed", lambda ax: self.OnFortranYLimChanged(self.fortran_subplot1))
+        self.fortran_subplot2.callbacks.connect("ylim_changed", lambda ax: self.OnFortranYLimChanged(self.fortran_subplot2))
+        self.fortran_subplot3.callbacks.connect("ylim_changed", lambda ax: self.OnFortranYLimChanged(self.fortran_subplot3))
+
         self.fortran_fig1.tight_layout()
         self.fortran_fig2.tight_layout()
         self.fortran_fig3.tight_layout()
         self.fortran_canvas1.draw()
         self.fortran_canvas2.draw()
         self.fortran_canvas3.draw()
+
+        # Alinhar perfeitamente as alturas e limites verticais dos 3 gráficos
+        p1 = self.fortran_subplot1.get_position()
+        p2 = self.fortran_subplot2.get_position()
+        p3 = self.fortran_subplot3.get_position()
+        common_y0 = max(p1.y0, p2.y0, p3.y0)
+        common_y1 = min(p1.y1, p2.y1, p3.y1)
+        common_h = common_y1 - common_y0
+
+        self.fortran_subplot1.set_position([p1.x0, common_y0, p1.width, common_h])
+        self.fortran_subplot2.set_position([p2.x0, common_y0, p2.width, common_h])
+        self.fortran_subplot3.set_position([p3.x0, common_y0, p3.width, common_h])
+
+        self.fortran_canvas1.draw()
+        self.fortran_canvas2.draw()
+        self.fortran_canvas3.draw()
+
+        self._syncing_fortran_energy = True
+        try:
+            for nav in (self.fortran_nav1, self.fortran_nav2, self.fortran_nav3):
+                if hasattr(nav, "_nav_stack"):
+                    nav._nav_stack.clear()
+                if hasattr(nav, "push_current"):
+                    nav.push_current()
+                if hasattr(nav, "zoom") and nav.mode != "zoom rect":
+                    nav.zoom()
+        finally:
+            self._syncing_fortran_energy = False
+
+    def OnFortranCanvasClicked(self, event, nav, canvas):
+        """
+        Handles mouse events on Fortran simulation canvases.
+        On double click, restores default view limits on all 3 synchronized graphs (nav.home())
+        and ensures box-zoom mode remains active on all of them.
+        """
+        if getattr(event, "dblclick", False):
+            self._syncing_fortran_energy = True
+            try:
+                for n, c in (
+                    (self.fortran_nav1, self.fortran_canvas1),
+                    (self.fortran_nav2, self.fortran_canvas2),
+                    (self.fortran_nav3, self.fortran_canvas3),
+                ):
+                    if hasattr(n, "home"):
+                        n.home()
+                    if hasattr(n, "zoom") and n.mode != "zoom rect":
+                        n.zoom()
+                    c.draw_idle()
+            finally:
+                self._syncing_fortran_energy = False
+
+    def OnFortranYLimChanged(self, source_ax):
+        """
+        Synchronizes the vertical energy axis across the 3 Fortran simulation plots:
+        - Plot 1 (Structure + WFs): Energy E (meV)
+        - Plot 2 (Oscillator Strength): Transition Energy ΔE = E - E0 (meV)
+        - Plot 3 (Photocurrent): Transition Energy ΔE = E - E0 (meV)
+        When zooming in any of them, the others update to the matching physical energy window.
+        """
+        if getattr(self, "_syncing_fortran_energy", False):
+            return
+
+        sample_data = getattr(self, "_fortran_sample_data", None)
+        if sample_data is None:
+            return
+
+        E0 = float(getattr(sample_data, "E0", 0.0))
+        y0, y1 = source_ax.get_ylim()
+
+        self._syncing_fortran_energy = True
+        try:
+            if source_ax == self.fortran_subplot1:
+                # Structure: y is E -> ΔE = E - E0
+                delta_lim = (y0 - E0, y1 - E0)
+                self.fortran_subplot2.set_ylim(delta_lim)
+                self.fortran_subplot3.set_ylim(delta_lim)
+                self.fortran_canvas2.draw_idle()
+                self.fortran_canvas3.draw_idle()
+            elif source_ax == self.fortran_subplot2:
+                # OscStr: y is ΔE -> E = ΔE + E0
+                e_lim = (y0 + E0, y1 + E0)
+                self.fortran_subplot1.set_ylim(e_lim)
+                self.fortran_subplot3.set_ylim((y0, y1))
+                self.fortran_canvas1.draw_idle()
+                self.fortran_canvas3.draw_idle()
+            elif source_ax == self.fortran_subplot3:
+                # Photocurrent: y is ΔE -> E = ΔE + E0
+                e_lim = (y0 + E0, y1 + E0)
+                self.fortran_subplot1.set_ylim(e_lim)
+                self.fortran_subplot2.set_ylim((y0, y1))
+                self.fortran_canvas1.draw_idle()
+                self.fortran_canvas2.draw_idle()
+        finally:
+            self._syncing_fortran_energy = False
+
+    def OnFortranOscPlotPress(self, event):
+        """Records initial press coordinates for the oscillator strength plot."""
+        if getattr(event, "dblclick", False):
+            self._fortran_osc_press_pos = None
+            return
+        if event.button == 1:
+            self._fortran_osc_press_pos = (event.x, event.y)
+
+    def OnFortranOscPlotRelease(self, event):
+        """
+        Interactively selects a point in the Oscillator Strength plot (fortran_subplot2).
+        If the mouse did not move significantly (a click rather than a zoom drag box),
+        finds the nearest transition in (OS, delta_E) space and highlights the corresponding
+        wavefunction in red in the structure graph (fortran_subplot1).
+        """
+        press_pos = getattr(self, "_fortran_osc_press_pos", None)
+        self._fortran_osc_press_pos = None
+
+        if press_pos is None or event.button != 1:
+            return
+
+        dx = abs(event.x - press_pos[0])
+        dy = abs(event.y - press_pos[1])
+        # If user dragged more than 5 pixels, it's a box zoom, not an item click
+        if dx > 5 or dy > 5:
+            return
+
+        if event.inaxes != self.fortran_subplot2 or event.xdata is None or event.ydata is None:
+            return
+
+        sample_data = getattr(self, "_fortran_sample_data", None)
+        if sample_data is None or len(sample_data.oscstr) == 0:
+            return
+
+        oscstr = np.asarray(sample_data.oscstr)
+        oscstr_e = np.asarray(sample_data.oscstr_e)
+
+        # Normalize distances according to current axis spans for accurate click detection
+        xlim = self.fortran_subplot2.get_xlim()
+        ylim = self.fortran_subplot2.get_ylim()
+        span_x = max(1e-6, abs(xlim[1] - xlim[0]))
+        span_y = max(1e-6, abs(ylim[1] - ylim[0]))
+
+        norm_dx = (oscstr - event.xdata) / span_x
+        norm_dy = (oscstr_e - event.ydata) / span_y
+        dist_sq = norm_dx ** 2 + norm_dy ** 2
+        nearest_idx = int(np.argmin(dist_sq))
+
+        if float(np.sqrt(dist_sq[nearest_idx])) <= 0.15:
+            # Re-draw with the selected transition highlighted
+            self.PlotFortranBandStructure(selected_osc_index=nearest_idx)
 
     def _plot_fallback_band_profile(self, struct):
         """Fallback method to plot simple conduction band profile when simulation files do not exist yet."""
@@ -3272,29 +3510,34 @@ class MainWindow(QMainWindow):
             w_l, qw_l, qb_l, mqw, w_r, qw_r, qb_r = set_structure_values(struct)
             desc = f"{int(w_l)}x{qw_l:.1f}_{qb_l:.1f} __{mqw:.1f}__ {int(w_r)}x{qw_r:.1f}_{qb_r:.1f}"
 
+            engine = "python" if (hasattr(self, "fortran_engine_cbox") and self.fortran_engine_cbox.currentIndex() == 1) else "fortran"
+            eng_title = "Python" if engine == "python" else "Fortran"
+
             self.fortran_run_btn.setEnabled(False)
-            self.fortran_run_btn.setText("⏳ Simulando...")
-            self.SetSimulatorState("running", "Fortran Sim")
-            self.LogMessage(f"⏳ Simulação Fortran iniciada: {desc}... Aguarde, executando Fortran...", "running")
-            self.fortran_output_txt.setText(f"Iniciando simulação Fortran...\nEstrutura: {desc}\nStatus: Processando no Fortran em segundo plano...")
+            self.fortran_run_btn.setText(f"⏳ Simulando ({eng_title})...")
+            self.SetSimulatorState("running", f"{eng_title} Sim")
+            self.LogMessage(f"⏳ Simulação {eng_title} iniciada: {desc}... Aguarde, executando motor {eng_title}...", "running")
+            self.fortran_output_txt.setText(f"Iniciando simulação {eng_title}...\nEstrutura: {desc}\nMotor: {eng_title}\nStatus: Processando em segundo plano...")
 
             import conf
             output_fortran_folder = getattr(conf, "output_fortran_folder", "")
-            self.fortran_worker = FortranSimWorker(struct, sim_options, output_fortran_folder)
+            self.fortran_worker = FortranSimWorker(struct, sim_options, output_fortran_folder, engine=engine)
             self.fortran_worker.sig_finished.connect(self.OnFortranSimFinished)
             self.fortran_worker.start()
         except Exception as e:
             self.SetSimulatorState("idle")
             self.fortran_run_btn.setEnabled(True)
-            self.fortran_run_btn.setText("Run Fortran")
-            err_msg = f"Erro ao iniciar simulação Fortran: {str(e)}"
+            is_py = (hasattr(self, "fortran_engine_cbox") and self.fortran_engine_cbox.currentIndex() == 1)
+            self.fortran_run_btn.setText("Run Python Simulation" if is_py else "Run Fortran Simulation")
+            err_msg = f"Erro ao iniciar simulação: {str(e)}"
             self.LogMessage(err_msg, "error")
             self.fortran_output_txt.setText(err_msg)
 
     def OnFortranSimFinished(self, success: bool, sample_data, error_msg: str, elapsed: float):
         """Slot called when the background FortranSimWorker finishes."""
         self.fortran_run_btn.setEnabled(True)
-        self.fortran_run_btn.setText("Run Fortran")
+        is_py = (hasattr(self, "fortran_engine_cbox") and self.fortran_engine_cbox.currentIndex() == 1)
+        self.fortran_run_btn.setText("Run Python Simulation" if is_py else "Run Fortran Simulation")
         self.SetSimulatorState("idle")
 
         if success and sample_data:
@@ -3349,6 +3592,7 @@ class MainWindow(QMainWindow):
             self.fortran_table_vsplitter.setSizes([260, 180])
 
         self.fortran_column_names = [
+            "Motor\n(Engine)",
             "LLQW\n(Nº Left)",
             "LQW\n(Left nm)",
             "LQB\n(Left Bar nm)",
@@ -3423,8 +3667,8 @@ class MainWindow(QMainWindow):
                 clean_name = name.replace("\n", " ")
                 self.fortran_plot_x_cbox.addItem(clean_name)
                 self.fortran_plot_y_cbox.addItem(clean_name)
-            self.fortran_plot_x_cbox.setCurrentIndex(3)  # MQW
-            self.fortran_plot_y_cbox.setCurrentIndex(7)  # PC Max
+            self.fortran_plot_x_cbox.setCurrentIndex(4)  # MQW (now index 4)
+            self.fortran_plot_y_cbox.setCurrentIndex(8)  # PC Max (now index 8)
             self.fortran_plot_x_cbox.currentIndexChanged.connect(self.PlotFortranTableData)
             self.fortran_plot_y_cbox.currentIndexChanged.connect(self.PlotFortranTableData)
 
@@ -3435,14 +3679,36 @@ class MainWindow(QMainWindow):
         if hasattr(self, "btn_fortran_clear_filters"):
             self.btn_fortran_clear_filters.clicked.connect(self.ClearFortranFilters)
 
+        # Botão para apagar simulação selecionada
+        if hasattr(self, "fortran_table_header_layout"):
+            self.btn_fortran_delete_sample = QPushButton("🗑️ Apagar Simulação")
+            self.btn_fortran_delete_sample.setStyleSheet(
+                "padding: 3px 8px; background-color: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; font-weight: bold; border-radius: 4px; font-size: 11px;"
+            )
+            self.btn_fortran_delete_sample.setToolTip("Excluir simulação selecionada (apaga os dados e a pasta do disco).")
+            self.btn_fortran_delete_sample.clicked.connect(self.DeleteSelectedFortranSimulation)
+            self.fortran_table_header_layout.addWidget(self.btn_fortran_delete_sample)
+
+        # Suporte a clique com botão direito (Menu de contexto) e tecla Delete
+        self.fortran_samples_table.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.fortran_samples_table.customContextMenuRequested.connect(self.OnFortranTableContextMenu)
+        orig_key_press = self.fortran_samples_table.keyPressEvent
+        def _table_key_press(event):
+            if event.key() in (Qt.Key_Delete, Qt.Key_Backspace):
+                self.DeleteSelectedFortranSimulation()
+                event.accept()
+            else:
+                orig_key_press(event)
+        self.fortran_samples_table.keyPressEvent = _table_key_press
+
         # Popula a tabela de simulações imediatamente na inicialização
         self.UpdateFortranSamplesTable()
         self._fortran_table_loaded = True
 
     def OpenExcelFilterDialog(self):
-        """Opens Excel-style filter dropdown for selected column (or MQW col 3 by default)."""
+        """Opens Excel-style filter dropdown for selected column (or MQW col 4 by default)."""
         sel_cols = self.fortran_samples_table.selectionModel().selectedColumns()
-        col = sel_cols[0].column() if sel_cols else 3
+        col = sel_cols[0].column() if sel_cols else 4
         self.OpenExcelFilterDialogForCol(col)
 
     def OpenExcelFilterDialogForCol(self, col: int, global_pt: QPoint = None):
@@ -3560,11 +3826,11 @@ class MainWindow(QMainWindow):
         if not hasattr(self, "fortran_table_subplot"):
             return
 
-        col_x = self.fortran_plot_x_cbox.currentIndex() if hasattr(self, "fortran_plot_x_cbox") else 3
-        col_y = self.fortran_plot_y_cbox.currentIndex() if hasattr(self, "fortran_plot_y_cbox") else 7
+        col_x = self.fortran_plot_x_cbox.currentIndex() if hasattr(self, "fortran_plot_x_cbox") else 4
+        col_y = self.fortran_plot_y_cbox.currentIndex() if hasattr(self, "fortran_plot_y_cbox") else 8
 
-        if col_x < 0: col_x = 3
-        if col_y < 0: col_y = 7
+        if col_x < 0: col_x = 4
+        if col_y < 0: col_y = 8
 
         xs, ys, rows = [], [], []
         total = self.fortran_samples_table.rowCount()
@@ -3687,6 +3953,11 @@ class MainWindow(QMainWindow):
             if not os.path.isdir(folder_path):
                 continue
 
+            is_py = folder.endswith("_python")
+            eng_val = "Python" if is_py else "Fortran"
+            eng_badge = "🐍 Python" if is_py else "⚡ Fortran"
+            base_folder = folder[:-7] if is_py else folder
+
             if folder in cache:
                 cached_data = cache[folder]
                 s0 = cached_data["s0"]
@@ -3705,6 +3976,7 @@ class MainWindow(QMainWindow):
                 pc_e = cached_data["pc_e"]
                 os_max = cached_data["os_max"]
                 os_e = cached_data["os_e"]
+                engine_cached = cached_data.get("engine", "python" if is_py else "fortran")
             else:
                 # Check if simulation output files exist
                 pot_file = os.path.join(folder_path, "Potencial_SL.txt")
@@ -3716,8 +3988,8 @@ class MainWindow(QMainWindow):
                     continue
 
                 try:
-                    # Parse structure params from folder name format: 05x02.0_07.0__02.5__01x02.0_07.0
-                    parts = folder.split("__")
+                    # Parse structure params from base_folder name format: 05x02.0_07.0__02.5__01x02.0_07.0
+                    parts = base_folder.split("__")
                     left_parts = parts[0].split("x")
                     s0 = int(left_parts[0])
                     s1_s2 = left_parts[1].split("_")
@@ -3742,7 +4014,8 @@ class MainWindow(QMainWindow):
                         reference_pc=None,
                         reference_pc_e=None
                     )
-                    simulator = FortranSimulator(struct, sim_options=sim_options, output_folder=db_dir)
+                    sim_eng = "python" if is_py else "fortran"
+                    simulator = FortranSimulator(struct, sim_options=sim_options, output_folder=db_dir, engine=sim_eng)
                     sample_data = simulator.simulate()
 
                     pc_max = sample_data.max_abs_photocurrent
@@ -3754,7 +4027,8 @@ class MainWindow(QMainWindow):
                         "s0": s0, "s1": s1, "s2": s2, "s3": s3,
                         "s4": s4, "s5": s5, "s6": s6,
                         "pc_max": pc_max, "pc_e": pc_e,
-                        "os_max": os_max, "os_e": os_e
+                        "os_max": os_max, "os_e": os_e,
+                        "engine": sim_eng
                     }
                     cache_dirty = True
                 except Exception as e:
@@ -3763,18 +4037,23 @@ class MainWindow(QMainWindow):
 
             self.fortran_samples_table.insertRow(row)
 
+            # Columns: Motor, s0, s1, s2, s3, s4, s5, s6, PC Max, PC Peak E, OS Max, OS Trans E
             display_vals = [
+                eng_badge,
                 f"{s0}", f"{s1:.1f}", f"{s2:.1f}", f"{s3:.1f}", f"{s4}", f"{s5:.1f}", f"{s6:.1f}",
                 f"{pc_max:.2e}", f"{pc_e:.1f}", f"{os_max:.4f}", f"{os_e:.1f}"
             ]
             raw_vals = [
+                eng_val,
                 s0, s1, s2, s3, s4, s5, s6,
                 pc_max, pc_e, os_max, os_e
             ]
 
             sample_dict = {
                 "s0": s0, "s1": s1, "s2": s2, "s3": s3,
-                "s4": s4, "s5": s5, "s6": s6
+                "s4": s4, "s5": s5, "s6": s6,
+                "folder": folder,
+                "engine": "python" if is_py else "fortran"
             }
             self.fortran_samples_data.append(sample_dict)
 
@@ -3783,6 +4062,17 @@ class MainWindow(QMainWindow):
                 item.setTextAlignment(Qt.AlignCenter)
                 if col == 0:
                     item.setData(Qt.UserRole, sample_dict)
+                    # Visual styling for engine badge
+                    if is_py:
+                        item.setForeground(QBrush(QColor("#0369a1")))  # Blue / Python tone
+                        font = item.font()
+                        font.setBold(True)
+                        item.setFont(font)
+                    else:
+                        item.setForeground(QBrush(QColor("#b45309")))  # Amber / Fortran tone
+                        font = item.font()
+                        font.setBold(True)
+                        item.setFont(font)
                 self.fortran_samples_table.setItem(row, col, item)
 
             row += 1
@@ -3832,16 +4122,139 @@ class MainWindow(QMainWindow):
             self.fortran_s5_spb.setValue(sample["s5"])
             self.fortran_s6_spb.setValue(sample["s6"])
 
-            self.fortran_s0_spb.blockSignals(False)
-            self.fortran_s1_spb.blockSignals(False)
-            self.fortran_s2_spb.blockSignals(False)
-            self.fortran_s3_spb.blockSignals(False)
-            self.fortran_s4_spb.blockSignals(False)
-            self.fortran_s5_spb.blockSignals(False)
-            self.fortran_s6_spb.blockSignals(False)
+            # Synchronize engine selector to match selected sample
+            sample_eng = sample.get("engine", "python" if sample.get("folder", "").endswith("_python") else "fortran")
+            if hasattr(self, "fortran_engine_cbox"):
+                self.fortran_engine_cbox.blockSignals(True)
+                self.fortran_engine_cbox.setCurrentIndex(1 if sample_eng == "python" else 0)
+                self.fortran_engine_cbox.blockSignals(False)
+                self.fortran_run_btn.setText("Run Python Simulation" if sample_eng == "python" else "Run Fortran Simulation")
 
-            self.PlotFortranBandStructure()
+            self.PlotFortranBandStructure(folder_name=sample.get("folder"))
             self.PlotFortranTableData()
+
+    def OnFortranTableContextMenu(self, pos: QPoint):
+        """Displays a right-click context menu on fortran_samples_table allowing simulation deletion."""
+        menu = QMenu(self)
+        del_action = menu.addAction("🗑️ Apagar Simulação Selecionada")
+        del_action.triggered.connect(self.DeleteSelectedFortranSimulation)
+        menu.exec_(self.fortran_samples_table.viewport().mapToGlobal(pos))
+
+    def DeleteSelectedFortranSimulation(self):
+        """
+        Deletes the currently selected simulation in fortran_samples_table:
+        1. Prompts the user with a confirmation dialog.
+        2. Deletes the simulation directory on disk and associated .pkl file if present.
+        3. Removes the record from samples_cache.json.
+        4. Removes the row from the table and updates plots/status.
+        """
+        selected_rows = self.fortran_samples_table.selectionModel().selectedRows()
+        if not selected_rows:
+            QMessageBox.information(
+                self,
+                "Nenhuma simulação selecionada",
+                "Por favor, selecione uma simulação na tabela para apagar."
+            )
+            return
+
+        row = selected_rows[0].row()
+        item0 = self.fortran_samples_table.item(row, 0)
+        sample = item0.data(Qt.UserRole) if item0 else None
+        if not sample and row < len(self.fortran_samples_data):
+            sample = self.fortran_samples_data[row]
+
+        folder_name = sample.get("folder", "") if sample else ""
+        if not folder_name:
+            # Fallback: construct folder name from s0-s6 parameters
+            try:
+                s0 = int(sample["s0"])
+                s1 = float(sample["s1"])
+                s2 = float(sample["s2"])
+                s3 = float(sample["s3"])
+                s4 = int(sample["s4"])
+                s5 = float(sample["s5"])
+                s6 = float(sample["s6"])
+                folder_name = f"{s0:02d}x{s1:04.1f}_{s2:04.1f}__{s3:04.1f}__{s4:02d}x{s5:04.1f}_{s6:04.1f}"
+            except Exception:
+                folder_name = "simulação selecionada"
+
+        reply = QMessageBox.question(
+            self,
+            "Confirmar Exclusão de Simulação",
+            f"Deseja realmente apagar a simulação '{folder_name}'?\n\nEsta ação excluirá permanentemente a pasta e os arquivos gerados do disco.",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No
+        )
+        if reply != QMessageBox.Yes:
+            return
+
+        import shutil
+        import conf
+        from conf import resolve_simulation_paths
+
+        output_fortran_folder = getattr(conf, "output_fortran_folder", "")
+        db_dir, sim_dir, pkl_dir, cache_file = resolve_simulation_paths(output_fortran_folder)
+
+        deleted_folder = False
+        if sim_dir and folder_name:
+            folder_path = os.path.join(sim_dir, folder_name)
+            if os.path.exists(folder_path):
+                try:
+                    shutil.rmtree(folder_path, ignore_errors=True)
+                    deleted_folder = True
+                except Exception as e:
+                    print(f"Erro ao excluir diretório {folder_path}: {e}")
+
+        if pkl_dir and folder_name:
+            pkl_file = os.path.join(pkl_dir, f"{folder_name}.pkl")
+            if os.path.exists(pkl_file):
+                try:
+                    os.remove(pkl_file)
+                except Exception as e:
+                    print(f"Erro ao excluir pkl {pkl_file}: {e}")
+
+        # Remove from samples_cache.json
+        if cache_file and os.path.exists(cache_file):
+            try:
+                with open(cache_file, "r") as f:
+                    cache = json.load(f)
+                if folder_name in cache:
+                    del cache[folder_name]
+                    with open(cache_file, "w") as f:
+                        json.dump(cache, f, indent=2)
+            except Exception as e:
+                print(f"Erro ao atualizar cache de simulações: {e}")
+
+        # Remove from table and internal list
+        self.fortran_samples_table.removeRow(row)
+        if sample in self.fortran_samples_data:
+            self.fortran_samples_data.remove(sample)
+
+        total = self.fortran_samples_table.rowCount()
+        if hasattr(self, "lbl_fortran_filter_status"):
+            self.lbl_fortran_filter_status.setText(f"Mostrando {total} de {total} simulações")
+
+        self.LogMessage(f"🗑️ Simulação '{folder_name}' apagada com sucesso.", "warning")
+        self.PlotFortranTableData()
+
+        # If there are remaining rows, select the nearest row; otherwise fallback plot
+        new_total = self.fortran_samples_table.rowCount()
+        if new_total > 0:
+            target_row = min(row, new_total - 1)
+            self.fortran_samples_table.selectRow(target_row)
+        else:
+            self._fortran_sample_data = None
+            struct = [
+                int(self.fortran_s0_spb.value()),
+                round(self.fortran_s1_spb.value() * 10, 1),
+                round(self.fortran_s2_spb.value() * 10, 1),
+                round(self.fortran_s3_spb.value() * 10, 1),
+                int(self.fortran_s4_spb.value()),
+                round(self.fortran_s5_spb.value() * 10, 1),
+                round(self.fortran_s6_spb.value() * 10, 1),
+            ]
+            self._plot_fallback_band_profile(struct)
+            self.fortran_output_txt.setText("Nenhuma simulação restante na tabela.")
 
     # GA tab methods ##################################################################
     def InitializeGATab(self):
@@ -3978,10 +4391,18 @@ class MainWindow(QMainWindow):
             self.ga_ind_canvas2.draw()
             self.ga_ind_canvas3.draw()
 
-    def PlotGAIndividual(self, ind: list, title_suffix: str = ""):
+    def PlotGAIndividual(self, ind: list, title_suffix: str = "", selected_osc_index=None):
         """Plots the 3 Fortran simulation curves for an individual in the bottom GA panels."""
         if not hasattr(self, "ga_ind_subplot1"):
             return
+
+        if selected_osc_index is not None:
+            self._ga_selected_osc_index = selected_osc_index
+        elif not hasattr(self, "_ga_selected_osc_index"):
+            self._ga_selected_osc_index = None
+
+        self._ga_current_ind = ind
+        self._ga_current_title_suffix = title_suffix
 
         from conf import output_fortran_folder
         sim_options = SimulationOptions(force_parser=False, force_simulation=False)
@@ -4001,6 +4422,7 @@ class MainWindow(QMainWindow):
         if sim_exists:
             try:
                 sample_data = simulator.simulate()
+                self._ga_ind_sample_data = sample_data
                 Plotter.plot_structure(
                     self.ga_ind_subplot1,
                     sample_data.x_potencial,
@@ -4008,7 +4430,8 @@ class MainWindow(QMainWindow):
                     sample_data.autoenergias,
                     sample_data.wavefunctions,
                     sample_data.max_e_oscstr_index,
-                    -50, 700
+                    -50, 700,
+                    selected_osc_index=self._ga_selected_osc_index
                 )
                 self.ga_ind_subplot1.set_title(f"Potencial e Funções de Onda{title_suffix}", fontsize=9, fontweight='bold', color='#1e293b')
 
@@ -4019,11 +4442,12 @@ class MainWindow(QMainWindow):
                     E0=sample_data.E0,
                     lim_E_min=-50,
                     lim_E_max=700,
-                    max_e_oscstr_index=sample_data.max_e_oscstr_index
+                    max_e_oscstr_index=sample_data.max_e_oscstr_index,
+                    selected_osc_index=self._ga_selected_osc_index
                 )
                 self.ga_ind_subplot2.yaxis.tick_left()
                 self.ga_ind_subplot2.yaxis.set_label_position("left")
-                self.ga_ind_subplot2.set_title(f"Força de Oscilador{title_suffix}", fontsize=9, fontweight='bold', color='#1e293b')
+                self.ga_ind_subplot2.set_title(f"Força de Oscilador{title_suffix} (clique para destacar)", fontsize=9, fontweight='bold', color='#1e293b')
 
                 Plotter.plot_pc(
                     self.ga_ind_subplot3,
@@ -4048,6 +4472,7 @@ class MainWindow(QMainWindow):
         else:
             try:
                 sample_data = simulator.simulate()
+                self._ga_ind_sample_data = sample_data
                 Plotter.plot_structure(
                     self.ga_ind_subplot1,
                     sample_data.x_potencial,
@@ -4055,7 +4480,8 @@ class MainWindow(QMainWindow):
                     sample_data.autoenergias,
                     sample_data.wavefunctions,
                     sample_data.max_e_oscstr_index,
-                    -50, 700
+                    -50, 700,
+                    selected_osc_index=self._ga_selected_osc_index
                 )
                 self.ga_ind_subplot1.set_title(f"Potencial e Funções de Onda{title_suffix}", fontsize=9, fontweight='bold', color='#1e293b')
 
@@ -4066,11 +4492,12 @@ class MainWindow(QMainWindow):
                     E0=sample_data.E0,
                     lim_E_min=-50,
                     lim_E_max=700,
-                    max_e_oscstr_index=sample_data.max_e_oscstr_index
+                    max_e_oscstr_index=sample_data.max_e_oscstr_index,
+                    selected_osc_index=self._ga_selected_osc_index
                 )
                 self.ga_ind_subplot2.yaxis.tick_left()
                 self.ga_ind_subplot2.yaxis.set_label_position("left")
-                self.ga_ind_subplot2.set_title(f"Força de Oscilador{title_suffix}", fontsize=9, fontweight='bold', color='#1e293b')
+                self.ga_ind_subplot2.set_title(f"Força de Oscilador{title_suffix} (clique para destacar)", fontsize=9, fontweight='bold', color='#1e293b')
 
                 Plotter.plot_pc(
                     self.ga_ind_subplot3,
@@ -4098,6 +4525,41 @@ class MainWindow(QMainWindow):
         self.ga_ind_canvas1.draw_idle()
         self.ga_ind_canvas2.draw_idle()
         self.ga_ind_canvas3.draw_idle()
+
+    def OnGAIndOscPlotClicked(self, event):
+        """
+        Interactively selects a point in the Oscillator Strength plot (ga_ind_subplot2).
+        Finds the nearest transition in (OS, delta_E) space and highlights the corresponding
+        wavefunction in red in the structure graph (ga_ind_subplot1).
+        """
+        if hasattr(self, "ga_ind_nav2") and self.ga_ind_nav2.mode != "":
+            return
+
+        if event.inaxes != self.ga_ind_subplot2 or event.xdata is None or event.ydata is None:
+            return
+
+        sample_data = getattr(self, "_ga_ind_sample_data", None)
+        if sample_data is None or len(sample_data.oscstr) == 0:
+            return
+
+        oscstr = np.asarray(sample_data.oscstr)
+        oscstr_e = np.asarray(sample_data.oscstr_e)
+
+        xlim = self.ga_ind_subplot2.get_xlim()
+        ylim = self.ga_ind_subplot2.get_ylim()
+        span_x = max(1e-6, abs(xlim[1] - xlim[0]))
+        span_y = max(1e-6, abs(ylim[1] - ylim[0]))
+
+        norm_dx = (oscstr - event.xdata) / span_x
+        norm_dy = (oscstr_e - event.ydata) / span_y
+        dist_sq = norm_dx ** 2 + norm_dy ** 2
+        nearest_idx = int(np.argmin(dist_sq))
+
+        if float(np.sqrt(dist_sq[nearest_idx])) <= 0.15:
+            current_ind = getattr(self, "_ga_current_ind", None)
+            title_suffix = getattr(self, "_ga_current_title_suffix", "")
+            if current_ind is not None:
+                self.PlotGAIndividual(current_ind, title_suffix=title_suffix, selected_osc_index=nearest_idx)
 
     def _plot_fallback_ga_band_profile(self, struct):
         """Fallback method to plot conduction band profile in GA tab."""

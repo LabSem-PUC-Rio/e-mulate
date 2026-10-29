@@ -130,3 +130,6 @@ dmypy.json
 linux_executable/temp_files/
 windows_executable/temp_database/
 windows_executable/source/fortran_python_llm/
+temp_files/fortran_test_ds/dev/
+windows_executable/source/fortran_simulation/python_simulation/
+temp_files/test_run*

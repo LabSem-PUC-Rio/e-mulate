@@ -1028,7 +1028,7 @@ class Plotter:
         del(fig)
 
     @staticmethod
-    def plot_structure(ax_graph, x_potencial, y_potencial, autoenergias, wavefunctions, max_e_oscstr_index, lim_E_min, lim_E_max):
+    def plot_structure(ax_graph, x_potencial, y_potencial, autoenergias, wavefunctions, max_e_oscstr_index, lim_E_min, lim_E_max, selected_osc_index=None):
         # to plot all wave functions with soft slate styling
         for wf in wavefunctions:
             ax_graph.plot(x_potencial, wf, color='#94a3b8', linewidth=0.75, alpha=0.6)
@@ -1042,6 +1042,13 @@ class Plotter:
         # plot excited WF corresponding to max oscillator strength transition (crimson / rose)
         if max_e_oscstr_index is not None and (max_e_oscstr_index + 1) < len(wavefunctions):
             ax_graph.plot(x_potencial, wavefunctions[max_e_oscstr_index+1], color='#e11d48', linewidth=2.2, label="Ψ_osc_max")
+
+        # plot selected WF corresponding to selected oscillator strength transition in bright red
+        if selected_osc_index is not None and (selected_osc_index + 1) < len(wavefunctions):
+            # Calculate transition energy or state number for the label
+            wf_idx = selected_osc_index + 1
+            e_label = f" (E={autoenergias[wf_idx]:.1f} meV)" if autoenergias is not None and wf_idx < len(autoenergias) else ""
+            ax_graph.plot(x_potencial, wavefunctions[wf_idx], color='#dc2626', linewidth=2.8, zorder=6, label=f"Ψ_{wf_idx}{e_label}")
         
         # plot fundamental ground state WF E0 (deep charcoal)
         if len(wavefunctions) > 0:
@@ -1062,12 +1069,16 @@ class Plotter:
                 oscstr_e: np.ndarray = np.array([]),
                 E0=0, lim_E_min=-50,
                 lim_E_max=700,
-                max_e_oscstr_index=None):
+                max_e_oscstr_index=None,
+                selected_osc_index=None):
         for _ose, _os in zip(oscstr_e, oscstr):
             ax_graph.plot(_os, _ose, '.', color='#f43f5e', markersize=4.5, alpha=0.75)
         
         if max_e_oscstr_index is not None and max_e_oscstr_index < len(oscstr):
             ax_graph.plot(oscstr[max_e_oscstr_index], oscstr_e[max_e_oscstr_index], 'o', color='#be123c', markersize=8, markeredgecolor='#881337', markeredgewidth=1)
+
+        if selected_osc_index is not None and selected_osc_index < len(oscstr):
+            ax_graph.plot(oscstr[selected_osc_index], oscstr_e[selected_osc_index], 'o', color='#dc2626', markersize=9.5, markeredgecolor='#7f1d1d', markeredgewidth=2.0, zorder=7)
             
         ax_graph.set_ylabel('ΔE (meV)', fontdict=None, labelpad=0)
         ax_graph.set_xlabel('Oscillator Strength', color="#be123c", fontweight='bold')

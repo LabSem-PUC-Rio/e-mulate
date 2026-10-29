@@ -46,7 +46,8 @@ from conf import file_ed_exe
 class FortranSimulator():
     def __init__(self, individual,
                  sim_options:SimulationOptions,
-                 output_folder="temp_files/fortran_test_ds/dev/"):
+                 output_folder="temp_files/fortran_test_ds/dev/",
+                 engine: str = "fortran"):
         """_summary_
         LLQW: number of lateral quantum wells on left side
         LQW: left quantum well thickness
@@ -101,8 +102,16 @@ class FortranSimulator():
         self.RQW_str  = rw_str = "{:04.1f}".format(structure[5])
         self.RQB_str  = rb_str = "{:04.1f}".format(structure[6])
         
+        self.engine = str(engine).lower().strip() if engine else "fortran"
         # definir nombres de carpetas y archivos
-        self.file_id     = lr_str+"x"+lw_str+"_"+lb_str+"__"+de_str+"__"+rr_str+"x"+rw_str+"_"+rb_str
+        base_id = lr_str+"x"+lw_str+"_"+lb_str+"__"+de_str+"__"+rr_str+"x"+rw_str+"_"+rb_str
+        if self.engine == "python":
+            self.file_id = f"{base_id}_python"
+        elif str(output_folder).endswith("_python"):
+            self.engine = "python"
+            self.file_id = f"{base_id}_python"
+        else:
+            self.file_id = base_id
         self.title_img   = lr_str+"x"+lw_str+"_"+lb_str+"  "+de_str+"  "+rr_str+"x"+rw_str+"_"+rb_str
         
         # Resolucao automatica de caminhos compativel com Windows e Linux
@@ -231,6 +240,26 @@ class FortranSimulator():
                     f"Código de retorno: {proc.returncode}\nDetalhes: {err_detail}"
                 )
             time.sleep(0.1)
+
+    def run_with_python(self):
+        """Executa a simulação idêntica usando o motor em Python NumPy (superlattice_solver)."""
+        os.makedirs(self.simulation_folder, exist_ok=True)
+        from windows_executable.source.fortran_simulation.superlattice_solver import (
+            SuperlatticeConfig, run_superlattice_simulation
+        )
+
+        cfg = SuperlatticeConfig.from_nm(
+            num_qb_left=int(self.structure[0]),
+            L_qw_left_nm=float(self.structure[1]),
+            L_qb_left_nm=float(self.structure[2]),
+            L_cqw_nm=float(self.structure[3]),
+            num_qb_right=int(self.structure[4]),
+            L_qw_right_nm=float(self.structure[5]),
+            L_qb_right_nm=float(self.structure[6]),
+        )
+
+        logger.info(f"Running python superlattice simulation in: {self.simulation_folder}")
+        run_superlattice_simulation(cfg, sample_folder=self.simulation_folder)
 
     def compile_run(self):
         self.only_compile()
@@ -434,7 +463,10 @@ class FortranSimulator():
 
     def simulate(self):
         if not os.path.exists(self.fimprograma_file):
-            self.run_with_inputs()
+            if self.engine == "python":
+                self.run_with_python()
+            else:
+                self.run_with_inputs()
         self.get_time()
         self.get_potencial()
         self.get_wavefunction()
@@ -454,6 +486,7 @@ class FortranSimulator():
         sample_data.title_img = self.title_img
         sample_data.sim_options = self.sim_options
         sample_data.total_time = self.total_time
+        sample_data.engine = self.engine
         
         
         # structure

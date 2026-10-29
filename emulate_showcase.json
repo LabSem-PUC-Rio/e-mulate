@@ -1,0 +1,280 @@
+{
+  "project_metadata": {
+    "id": "e-mulate",
+    "slug": "emulate-quantum-simulator",
+    "name": "e-mulate",
+    "version": "v0.4",
+    "full_title": "e-mulate: Quantum Heterostructure Simulator & Evolutionary Bandgap Engineering Platform",
+    "tagline": "Advanced Quantum Well & Superlattice Simulation with Photocurrent Modeling, Schrödinger Solvers (Numerov & TMM), and Multi-Objective Genetic Algorithms",
+    "authors": [
+      {
+        "name": "Dr. Jose Ruiz",
+        "role": "Lead Architect & Quantum Device Researcher",
+        "affiliation": "LabSem - PUC-Rio",
+        "links": {
+          "portfolio": "https://joseruiz1989.github.io",
+          "github": "https://github.com/joseruiz1989",
+          "scholar": "https://scholar.google.com/citations?user=nE5XCmMAAAAJ&hl=en"
+        }
+      },
+      { "name": "Prof. Daniel Penello", "role": "Principal Investigator", "affiliation": "LabSem - PUC-Rio" },
+      { "name": "Pereira", "role": "Co-Investigator", "affiliation": "LabSem - PUC-Rio" },
+      { "name": "Torelly", "role": "Co-Investigator", "affiliation": "LabSem - PUC-Rio" }
+    ],
+    "institution": "LabSem - Laboratório de Semicondutores, Departamento de Física, Pontifícia Universidade Católica do Rio de Janeiro (PUC-Rio)",
+    "timeline": "2022 - 2026",
+    "status": "Production / Active Research Tool",
+    "license": "Academic / Open Research",
+    "repository_url": "https://github.com/LabSem-PUC-Rio/e-mulate",
+    "primary_language": "Python 3 / Fortran 90",
+    "tech_stack": [
+      "Python 3.10+",
+      "Fortran 90",
+      "PyQt5",
+      "NumPy",
+      "SciPy",
+      "Pandas",
+      "Matplotlib",
+      "DEAP (Genetic Algorithms)",
+      "OpenMP / Multiprocessing"
+    ],
+    "keywords": [
+      "Quantum Heterostructures",
+      "Quantum Well Infrared Photodetectors (QWIPs)",
+      "Bandgap Engineering",
+      "Schrödinger Equation",
+      "Numerov Method",
+      "Transfer Matrix Method (TMM)",
+      "Intersubband Transitions",
+      "Photocurrent Spectra",
+      "Oscillator Strength",
+      "Genetic Algorithms",
+      "Evolutionary Optimization",
+      "Semiconductor Superlattices",
+      "GaAs / AlGaAs"
+    ]
+  },
+
+  "abstracts": {
+    "en": "e-mulate is an integrated scientific computing environment for simulating, analyzing, and optimizing semiconductor quantum heterostructures (coupled quantum wells and defective superlattices) tailored for mid- and far-infrared optoelectronic devices such as Quantum Well Infrared Photodetectors (QWIPs) and Quantum Cascade Detectors (QCDs). It couples 4th-order Numerov and Transfer Matrix (TMM) Schrödinger solvers with an ultra-fast native Fortran 90 core and a bio-inspired multi-objective Genetic Algorithm (DEAP), wrapped in a responsive PyQt5 user interface with Excel-like database filtering and bi-directional interactive Matplotlib visualization.",
+    "es": "e-mulate es un entorno de computación científica integrado para la simulación, análisis y optimización bioinspirada de heteroestructuras cuánticas de semiconductores (pozos cuánticos acoplados y super-redes con defectos), orientado a dispositivos optoelectrónicos infrarrojos (QWIPs y QCDs). Acopla solucionadores de Schrödinger por Numerov de 4º orden y Matriz de Transferencia (TMM) con un núcleo acelerado en Fortran 90 y un Algoritmo Genético multiobjetivo basado en DEAP, presentado en una interfaz PyQt5 moderna con filtrado estilo Excel y visualizaciones interactivas bidireccionales en Matplotlib.",
+    "pt": "O E-mulate é um ambiente integrado de computação científica para simulação, análise e otimização bioinspirada de heteroestruturas quânticas de semicondutores (poços quânticos acoplados e super-redes com defeitos), voltado para dispositivos optoeletrônicos de infravermelho médio e distante (QWIPs e QCDs). Combina os métodos de Numerov de 4ª ordem e Matriz de Transferência (TMM) com um motor ultra-rápido compilado em Fortran 90 e Algoritmo Genético multiobjetivo (DEAP), envelopados por uma interface gráfica PyQt5 com filtros tipo Excel e gráficos interativos bidirecionais em Matplotlib."
+  },
+
+  "theoretical_formulation": {
+    "schrodinger_equation": {
+      "name": "1D Time-Independent Effective-Mass Schrödinger Equation",
+      "latex": "-\\frac{\\hbar^2}{2} \\frac{d}{dz}\\left[\\frac{1}{m^*(z)}\\frac{d\\psi(z)}{dz}\\right] + V(z)\\psi(z) = E\\psi(z)",
+      "description": "Modela o confinamento quântico ao longo do eixo de crescimento epitaxil z levando em conta a descontinuidade de banda de condução e a variação espacial da massa efetiva do elétron entre poços e barreiras."
+    },
+    "boundary_conditions": {
+      "name": "BenDaniel-Duke Boundary Conditions",
+      "latex": "\\psi_A(z_0) = \\psi_B(z_0) \\quad \\text{and} \\quad \\left.\\frac{1}{m_A^*} \\frac{d\\psi_A}{dz}\\right|_{z_0} = \\left.\\frac{1}{m_B^*} \\frac{d\\psi_B}{dz}\\right|_{z_0}",
+      "description": "Garante a conservação da densidade de probabilidade e da corrente de probabilidade quântica através de cada interface abrupta heteroepitaxial hetero-interface GaAs/Al_xGa_{1-x}As."
+    },
+    "numerov_solver": {
+      "name": "4th-Order Numerov Discretization",
+      "latex": "y_{n+1} = \\frac{2\\left(1 - \\frac{5}{12}h^2 k_n^2\\right)y_n - \\left(1 + \\frac{1}{12}h^2 k_{n-1}^2\\right)y_{n-1}}{1 + \\frac{1}{12}h^2 k_{n+1}^2}",
+      "description": "Discretização de alta precisão O(h^6) para integração da equação diferencial e busca precisa de autoenergias E_n e funções de onda normalizadas \\psi_n(z)."
+    },
+    "transfer_matrix_method": {
+      "name": "Transfer Matrix Method (TMM) for Transmission Probability",
+      "latex": "M = \\prod_{j=1}^{N} M_j, \\quad T(E) = \\frac{k_R m_L^*}{k_L m_R^*} \\frac{1}{|M_{11}|^2}",
+      "description": "Propagação das amplitudes de onda através de multicamadas de barreiras finitas para mapear o coeficiente de transmissão T(E), identificando estados quasi-ligados (quasibound states) e tempos de vida de tunelamento."
+    },
+    "oscillator_strength": {
+      "name": "Optical Dipole Transition & Intersubband Oscillator Strength",
+      "latex": "f_{if} = \\frac{2 m_0 (E_f - E_i)}{\\hbar^2} |\\langle \\psi_i | z | \\psi_f \\rangle|^2",
+      "description": "Quantifica a força de acoplamento óptico dipolar elétrico para transições ópticas entre o estado fundamental confinado \\psi_i e estados excitados ou de minibanda \\psi_f sob polarização TM."
+    },
+    "photocurrent_model": {
+      "name": "Field-Assisted Transport & Photocurrent Generation",
+      "latex": "I_{PC}(h\\nu) = q \\cdot \\Phi_0 \\cdot \\sum_{i,f} \\alpha_{if}(h\\nu) \\cdot p_{\\text{tunnel}}(E_f, F) \\cdot \\eta_{\\text{collection}}",
+      "description": "Calcula o espectro de fotocorrente contínua em escala física absoluta de Amperes (A) em função da energia do fóton meV, integrando absorção óptica, probabilidade de escape por tunelamento assistido por campo elétrico e transporte na minibanda da super-rede."
+    }
+  },
+
+  "superlattice_parameters": {
+    "total_parameters": 7,
+    "architecture_type": "Defect-Engineered Finite Superlattice [Left SL Block] - [Main Defect Well] - [Right SL Block]",
+    "parameters": [
+      {
+        "symbol": "LLQW",
+        "name": "Lateral Left Quantum Wells Count",
+        "unit": "integer",
+        "typical_range": [1, 10],
+        "default": 5,
+        "description": "Número de repetições de poços quânticos no bloco periódico esquerdo."
+      },
+      {
+        "symbol": "LQW",
+        "name": "Left Quantum Well Thickness",
+        "unit": "nm",
+        "typical_range": [1.0, 5.0],
+        "step": 0.1,
+        "default": 2.0,
+        "description": "Espessura de cada poço quântico no bloco de super-rede esquerdo."
+      },
+      {
+        "symbol": "LQB",
+        "name": "Left Quantum Barrier Thickness",
+        "unit": "nm",
+        "typical_range": [3.0, 10.0],
+        "step": 0.1,
+        "default": 7.0,
+        "description": "Espessura de cada barreira semicondutora no bloco esquerdo."
+      },
+      {
+        "symbol": "MQW",
+        "name": "Main Quantum Well (Defect Well)",
+        "unit": "nm",
+        "typical_range": [2.0, 6.0],
+        "step": 0.1,
+        "default": 2.5,
+        "description": "Espessura do poço quântico principal central que quebra a simetria da super-rede e hospeda o estado fundamental localizado."
+      },
+      {
+        "symbol": "RLQW",
+        "name": "Lateral Right Quantum Wells Count",
+        "unit": "integer",
+        "typical_range": [1, 5],
+        "default": 1,
+        "description": "Número de repetições de poços quânticos no bloco periódico direito."
+      },
+      {
+        "symbol": "RQW",
+        "name": "Right Quantum Well Thickness",
+        "unit": "nm",
+        "typical_range": [1.0, 5.0],
+        "step": 0.1,
+        "default": 2.0,
+        "description": "Espessura de cada poço quântico no bloco de super-rede direito."
+      },
+      {
+        "symbol": "RQB",
+        "name": "Right Quantum Barrier Thickness",
+        "unit": "nm",
+        "typical_range": [3.0, 10.0],
+        "step": 0.1,
+        "default": 7.0,
+        "description": "Espessura de cada barreira semicondutora no bloco direito."
+      }
+    ],
+    "structural_constraint": {
+      "rule": "MQW >= max(LQW, RQW) + 0.5 nm",
+      "physics_reason": "Garante que o poço central possua o estado fundamental mais profundo para concentrar a população de elétrons e maximizar a absorção óptica intersubbanda."
+    }
+  },
+
+  "key_modules": [
+    {
+      "module_name": "Fortran Sim (Motor Rápido de Super-rede)",
+      "icon": "fa-bolt",
+      "summary": "Simulador individual de alta performance compilado em Fortran 90.",
+      "details": [
+        "Executa o binário 'photocurrent_sim_windows.exe' passando os 7 parâmetros estruturais e caminho de saída sem dependência de shell.",
+        "Gera 8 arquivos de saída físicos por simulação (Potencial_SL.txt, wavefunction_SL.txt, OscStr_SL.txt, Photocurrent_SL.txt, Energy_SL.txt, Transmission_SL.txt, FimPrograma.txt, image.png).",
+        "Renderização em 3 subplots simultâneos: Perfil de potencial com autoestados empilhados En + psi_n(z), Força de oscilador discreta e Espectro contínuo de fotocorrente física absoluta (Amperes).",
+        "Detecção automática de simulações preexistentes em disco para carregamento instantâneo (< 0.1s) sem recomputação desnecessária."
+      ]
+    },
+    {
+      "module_name": "Algoritmo Genético Evolutivo (DEAP)",
+      "icon": "fa-dna",
+      "summary": "Otimização inversa bioinspirada de heteroestruturas semicondutoras.",
+      "details": [
+        "Espaços genômicos selecionáveis: 3 parâmetros (simétrico), 5 parâmetros (periódico) ou 7 parâmetros (assimétrico livre).",
+        "Funções de aptidão (fitness) multiobjetivo configuráveis: PC Máx, Força de Oscilador Máx ou Combinado (OS + PC).",
+        "Janela de energia alvo com tolerância (padrão: 300.0 meV ± 20.0 meV) e política de penalização contínua suave (evita o descarte abrupto de estruturas de alta intensidade próximas da borda).",
+        "Execução paralela multithread com controle de núcleos de CPU alocados e monitoramento ao vivo das curvas geracionais de fitness médio e melhor.",
+        "Inspeção individual dos indivíduos gerados: clique num ponto da curva para inspecionar gráficos e exportar para a aba de simulação com 1 clique."
+      ]
+    },
+    {
+      "module_name": "Automate (Varredura em Grade / Grid Sweep)",
+      "icon": "fa-sliders",
+      "summary": "Mapeamento sistemático combinatório do espaço de parâmetros.",
+      "details": [
+        "Configuração granular de cada parâmetro como Fixo ou Variável (mínimo, máximo, passo).",
+        "Cálculo prévio do espaço combinatório total e estimativa do tempo total de execução antes do disparo.",
+        "Motor assíncrono multithread com cancelamento seguro a qualquer momento sem corrupção de resultados.",
+        "Exportação direta de todos os resultados da varredura com parâmetros e métricas para arquivos CSV tabulados."
+      ]
+    },
+    {
+      "module_name": "Banco de Dados & Filtros Estilo Excel",
+      "icon": "fa-table",
+      "summary": "Gerenciamento analítico acelerado com persistência JSON e filtros interativos.",
+      "details": [
+        "Mais de 216 simulações completas de super-redes pré-calculadas integradas ao repositório.",
+        "Sistema de aceleração por cache JSON persistente ('samples_cache.json') eliminando tempo de carregamento ao inicializar.",
+        "Cabeçalhos de tabela inteligentes tipo Excel com popups dedicados: ordenação crescente/decrescente, filtros numéricos (>, <, =, entre) e busca por checkboxes de valores únicos.",
+        "Gráfico de dispersão 2D interativo com eixos X e Y selecionáveis e sincronização bidirecional (o clique no gráfico seleciona a linha na tabela e atualiza os gráficos físicos de banda instantaneamente)."
+      ]
+    },
+    {
+      "module_name": "Portabilidade & Normalização de Caminhos",
+      "icon": "fa-cog",
+      "summary": "Execução robusta transparente em Windows e Linux.",
+      "details": [
+        "Resolução inteligente de caminhos ('resolve_simulation_paths') que tolera barras invertidas (\\) ou diretas (/), com ou sem subpasta 'temp'.",
+        "Diálogo de Configurações acessível pelo menu com validação dinâmica do executável e contador de simulações em tempo real.",
+        "Sincronização instantânea da barra inferior de saída em toda a interface."
+      ]
+    }
+  ],
+
+  "benchmarks_and_metrics": {
+    "sample_case_study": {
+      "sample_id": "05x02.0_07.0__02.5__01x02.0_07.0",
+      "description": "Super-rede assimétrica de GaAs/AlGaAs com 5 poços à esquerda (2.0 nm) / barreiras (7.0 nm) e poço de defeito central (2.5 nm)",
+      "results": {
+        "pc_max_amperes": 1.5512e-11,
+        "pc_peak_energy_mev": 309.6,
+        "pc_peak_wavelength_um": 4.005,
+        "oscillator_strength_max": 0.3588,
+        "optical_transition_energy_mev": 299.9,
+        "runtime_seconds": 3.8
+      }
+    },
+    "performance_benchmarks": {
+      "fortran_core_speed": "~3 a 5 segundos por heteroestrutura completa de 7 poços em CPU padrão",
+      "json_cache_hit_speed": "< 50 milissegundos para carregar e tabular 216 simulações completas",
+      "parallel_speedup": "Escala linearmente com número de núcleos de CPU na otimização genética (até 16 threads)"
+    }
+  },
+
+  "scientific_citations": [
+    {
+      "title": "Quantum Well Infrared Photodetectors: Principles and Physics",
+      "authors": "Schneider, H., & Liu, H. C.",
+      "journal": "Springer Series in Advanced Microelectronics",
+      "year": 2007
+    },
+    {
+      "title": "Wave Mechanics Applied to Semiconductor Heterostructures",
+      "authors": "Bastard, G.",
+      "journal": "Les Éditions de Physique",
+      "year": 1988
+    },
+    {
+      "title": "The Physics of Low-Dimensional Semiconductors: An Introduction",
+      "authors": "Davies, J. H.",
+      "journal": "Cambridge University Press",
+      "year": 1998
+    },
+    {
+      "title": "Quantum Wells, Wires and Dots: Theoretical and Computational Physics of Semiconductor Nanostructures",
+      "authors": "Harrison, P., & Valavanis, A.",
+      "journal": "Wiley",
+      "year": 2016
+    }
+  ],
+
+  "ready_to_use_html_template": {
+    "page_file": "emulate-quantum-heterostructure.html",
+    "meta_description": "e-mulate: Quantum Heterostructure Simulator & Evolutionary Bandgap Engineering Platform - Dr. Jose Ruiz, LabSem PUC-Rio",
+    "breadcrumb": "Home > Projects > e-mulate Quantum Simulator",
+    "suggested_hero_image": "img/projects/emulate-hero.png"
+  }
+}
