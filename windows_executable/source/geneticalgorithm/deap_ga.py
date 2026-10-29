@@ -311,6 +311,7 @@ class DeapGAOptimizer:
         self.target_energy = float(target_energy)
         self.target_margin = float(target_margin)
         self.csv_path = csv_path
+        self.resume = bool(resume)
         import conf
         current_out = getattr(conf, "output_fortran_folder", output_fortran_folder)
         self.output_dir = output_dir or os.path.join(current_out, "optimizations")
@@ -411,7 +412,7 @@ class DeapGAOptimizer:
         # Selection operator
         self.toolbox.register("select", tools.selTournament, tournsize=3)
 
-    def evaluate_individual(self, ind: list) -> Tuple[float, dict]:
+    def evaluate_individual(self, ind: list, info_tag: str = "") -> Tuple[float, dict]:
         """
         Evaluates an individual using FortranSimulator with caching.
         Returns (fitness, result_dict).
@@ -422,6 +423,9 @@ class DeapGAOptimizer:
                 return self._simulation_cache[ind_key]
 
         clamp_individual(ind, self.bounds)
+
+        prefix = f"[{info_tag}] " if info_tag else ""
+        self._log(f"{prefix}Iniciando simulación para individuo: {list(ind)}")
 
         sim_options = SimulationOptions(
             force_parser=False,
@@ -468,6 +472,11 @@ class DeapGAOptimizer:
 
         with self._cache_lock:
             self._simulation_cache[ind_key] = (fitness, res_dict)
+
+        self._log(
+            f"{prefix}Simulación completada en {elapsed:.2f}s | "
+            f"Ind: {list(ind)} | Fitness: {fitness:.4f}"
+        )
         return fitness, res_dict
 
     def _evaluate_batch(self, individuals: list):
@@ -489,17 +498,18 @@ class DeapGAOptimizer:
                 unique_to_eval[key] = ind
 
         # 2. Run simulation in parallel or sequentially for uncached individuals
+        n_eval = len(unique_to_eval)
         if unique_to_eval:
             if self.parallel and self.n_workers > 1:
-                n_threads = min(self.n_workers, len(unique_to_eval))
+                n_threads = min(self.n_workers, n_eval)
                 self._log(
-                    f"Executando {len(unique_to_eval)} simulações em paralelo "
+                    f"Executando {n_eval} simulações em paralelo "
                     f"usando {n_threads} núcleos/threads..."
                 )
                 with concurrent.futures.ThreadPoolExecutor(max_workers=n_threads) as executor:
                     futures = {
-                        executor.submit(self.evaluate_individual, ind): ind
-                        for ind in unique_to_eval.values()
+                        executor.submit(self.evaluate_individual, ind, f"Sim {idx+1}/{n_eval}"): (idx, ind)
+                        for idx, ind in enumerate(unique_to_eval.values())
                     }
                     for fut in concurrent.futures.as_completed(futures):
                         if self.is_cancelled():
@@ -510,10 +520,10 @@ class DeapGAOptimizer:
                         except Exception as e:
                             self._log(f"Erro em thread de simulação: {e}")
             else:
-                for ind in unique_to_eval.values():
+                for idx, ind in enumerate(unique_to_eval.values()):
                     if self.is_cancelled():
                         break
-                    self.evaluate_individual(ind)
+                    self.evaluate_individual(ind, f"Sim {idx+1}/{n_eval}")
 
         # 3. Assign fitness from cache and report progress
         total = len(individuals)
